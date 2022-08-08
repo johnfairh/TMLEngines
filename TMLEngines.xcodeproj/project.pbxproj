@@ -7,27 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		02EB2AFE289FD2FE00DA44BE /* DemoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02EB2AFD289FD2FE00DA44BE /* DemoApp.swift */; };
-		02EB2B00289FD2FE00DA44BE /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02EB2AFF289FD2FE00DA44BE /* ContentView.swift */; };
+		02BFB48028A11B7300FD61EF /* MetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02BFB47F28A11B7300FD61EF /* MetalView.swift */; };
+		02EB2AFE289FD2FE00DA44BE /* Demo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02EB2AFD289FD2FE00DA44BE /* Demo.swift */; };
 		02EB2B02289FD30000DA44BE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 02EB2B01289FD30000DA44BE /* Assets.xcassets */; };
-		02EB2B05289FD30000DA44BE /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 02EB2B04289FD30000DA44BE /* Preview Assets.xcassets */; };
 		02EB2B0B289FD43D00DA44BE /* MetalEngine.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "tmlengines::MetalEngine::Product" /* MetalEngine.framework */; };
 		02EB2B0C289FD43D00DA44BE /* MetalEngine.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = "tmlengines::MetalEngine::Product" /* MetalEngine.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		OBJ_26 /* Demo.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_9 /* Demo.swift */; };
-		OBJ_28 /* MetalEngine.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "tmlengines::MetalEngine::Product" /* MetalEngine.framework */; };
 		OBJ_35 /* Engine.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* Engine.swift */; };
 		OBJ_42 /* MetalEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_14 /* MetalEngineTests.swift */; };
 		OBJ_44 /* MetalEngine.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "tmlengines::MetalEngine::Product" /* MetalEngine.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		02EB2AF4289FD09700DA44BE /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = OBJ_1 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = "tmlengines::MetalEngine";
-			remoteInfo = MetalEngine;
-		};
 		02EB2AF5289FD09700DA44BE /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = OBJ_1 /* Project object */;
@@ -59,17 +49,14 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		02EB2AFB289FD2FE00DA44BE /* DemoApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DemoApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		02EB2AFD289FD2FE00DA44BE /* DemoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoApp.swift; sourceTree = "<group>"; };
-		02EB2AFF289FD2FE00DA44BE /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		02BFB47F28A11B7300FD61EF /* MetalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalView.swift; sourceTree = "<group>"; };
+		02EB2AFB289FD2FE00DA44BE /* Demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Demo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		02EB2AFD289FD2FE00DA44BE /* Demo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Demo.swift; sourceTree = "<group>"; };
 		02EB2B01289FD30000DA44BE /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		02EB2B04289FD30000DA44BE /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		02EB2B06289FD30000DA44BE /* DemoApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DemoApp.entitlements; sourceTree = "<group>"; };
+		02EB2B06289FD30000DA44BE /* Demo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Demo.entitlements; sourceTree = "<group>"; };
 		OBJ_11 /* Engine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Engine.swift; sourceTree = "<group>"; };
 		OBJ_14 /* MetalEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalEngineTests.swift; sourceTree = "<group>"; };
 		OBJ_6 /* Package.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
-		OBJ_9 /* Demo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Demo.swift; sourceTree = "<group>"; };
-		"tmlengines::Demo::Product" /* Demo */ = {isa = PBXFileReference; lastKnownFileType = text; path = Demo; sourceTree = BUILT_PRODUCTS_DIR; };
 		"tmlengines::MetalEngine::Product" /* MetalEngine.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = MetalEngine.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"tmlengines::MetalEngineTests::Product" /* MetalEngineTests.xctest */ = {isa = PBXFileReference; lastKnownFileType = file; path = MetalEngineTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -80,14 +67,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				02EB2B0B289FD43D00DA44BE /* MetalEngine.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		OBJ_27 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 0;
-			files = (
-				OBJ_28 /* MetalEngine.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -109,26 +88,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		02EB2AFC289FD2FE00DA44BE /* DemoApp */ = {
+		02EB2AFC289FD2FE00DA44BE /* Demo */ = {
 			isa = PBXGroup;
 			children = (
-				02EB2AFD289FD2FE00DA44BE /* DemoApp.swift */,
-				02EB2AFF289FD2FE00DA44BE /* ContentView.swift */,
+				02EB2AFD289FD2FE00DA44BE /* Demo.swift */,
 				02EB2B01289FD30000DA44BE /* Assets.xcassets */,
-				02EB2B06289FD30000DA44BE /* DemoApp.entitlements */,
-				02EB2B03289FD30000DA44BE /* Preview Content */,
+				02EB2B06289FD30000DA44BE /* Demo.entitlements */,
 			);
-			name = DemoApp;
-			path = Sources/DemoApp;
+			name = Demo;
+			path = Sources/Demo;
 			sourceTree = SOURCE_ROOT;
-		};
-		02EB2B03289FD30000DA44BE /* Preview Content */ = {
-			isa = PBXGroup;
-			children = (
-				02EB2B04289FD30000DA44BE /* Preview Assets.xcassets */,
-			);
-			path = "Preview Content";
-			sourceTree = "<group>";
 		};
 		02EB2B0A289FD43D00DA44BE /* Frameworks */ = {
 			isa = PBXGroup;
@@ -141,6 +110,7 @@
 			isa = PBXGroup;
 			children = (
 				OBJ_11 /* Engine.swift */,
+				02BFB47F28A11B7300FD61EF /* MetalView.swift */,
 			);
 			name = MetalEngine;
 			path = Sources/MetalEngine;
@@ -166,51 +136,39 @@
 		OBJ_15 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				"tmlengines::Demo::Product" /* Demo */,
 				"tmlengines::MetalEngine::Product" /* MetalEngine.framework */,
 				"tmlengines::MetalEngineTests::Product" /* MetalEngineTests.xctest */,
-				02EB2AFB289FD2FE00DA44BE /* DemoApp.app */,
+				02EB2AFB289FD2FE00DA44BE /* Demo.app */,
 			);
 			name = Products;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		OBJ_5 /*  */ = {
+		OBJ_5 = {
 			isa = PBXGroup;
 			children = (
 				OBJ_6 /* Package.swift */,
 				OBJ_7 /* Sources */,
 				OBJ_12 /* Tests */,
-				02EB2AFC289FD2FE00DA44BE /* DemoApp */,
 				OBJ_15 /* Products */,
 				02EB2B0A289FD43D00DA44BE /* Frameworks */,
 			);
-			name = "";
 			sourceTree = "<group>";
 		};
 		OBJ_7 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
 				OBJ_10 /* MetalEngine */,
-				OBJ_8 /* Demo */,
+				02EB2AFC289FD2FE00DA44BE /* Demo */,
 			);
 			name = Sources;
-			sourceTree = SOURCE_ROOT;
-		};
-		OBJ_8 /* Demo */ = {
-			isa = PBXGroup;
-			children = (
-				OBJ_9 /* Demo.swift */,
-			);
-			name = Demo;
-			path = Sources/Demo;
 			sourceTree = SOURCE_ROOT;
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		02EB2AFA289FD2FE00DA44BE /* DemoApp */ = {
+		02EB2AFA289FD2FE00DA44BE /* Demo */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 02EB2B07289FD30000DA44BE /* Build configuration list for PBXNativeTarget "DemoApp" */;
+			buildConfigurationList = 02EB2B07289FD30000DA44BE /* Build configuration list for PBXNativeTarget "Demo" */;
 			buildPhases = (
 				02EB2AF7289FD2FE00DA44BE /* Sources */,
 				02EB2AF8289FD2FE00DA44BE /* Frameworks */,
@@ -222,27 +180,10 @@
 			dependencies = (
 				02EB2B0E289FD43D00DA44BE /* PBXTargetDependency */,
 			);
-			name = DemoApp;
-			productName = DemoApp;
-			productReference = 02EB2AFB289FD2FE00DA44BE /* DemoApp.app */;
-			productType = "com.apple.product-type.application";
-		};
-		"tmlengines::Demo" /* Demo */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = OBJ_22 /* Build configuration list for PBXNativeTarget "Demo" */;
-			buildPhases = (
-				OBJ_25 /* Sources */,
-				OBJ_27 /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				OBJ_29 /* PBXTargetDependency */,
-			);
 			name = Demo;
-			productName = Demo;
-			productReference = "tmlengines::Demo::Product" /* Demo */;
-			productType = "com.apple.product-type.tool";
+			productName = DemoApp;
+			productReference = 02EB2AFB289FD2FE00DA44BE /* Demo.app */;
+			productType = "com.apple.product-type.application";
 		};
 		"tmlengines::MetalEngine" /* MetalEngine */ = {
 			isa = PBXNativeTarget;
@@ -300,14 +241,13 @@
 			knownRegions = (
 				en,
 			);
-			mainGroup = OBJ_5 /*  */;
+			mainGroup = OBJ_5;
 			productRefGroup = OBJ_15 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				"tmlengines::MetalEngine" /* MetalEngine */,
-				02EB2AFA289FD2FE00DA44BE /* DemoApp */,
-				"tmlengines::Demo" /* Demo */,
+				02EB2AFA289FD2FE00DA44BE /* Demo */,
 				"tmlengines::MetalEngineTests" /* MetalEngineTests */,
 			);
 		};
@@ -318,7 +258,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				02EB2B05289FD30000DA44BE /* Preview Assets.xcassets in Resources */,
 				02EB2B02289FD30000DA44BE /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -330,16 +269,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				02EB2B00289FD2FE00DA44BE /* ContentView.swift in Sources */,
-				02EB2AFE289FD2FE00DA44BE /* DemoApp.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		OBJ_25 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 0;
-			files = (
-				OBJ_26 /* Demo.swift in Sources */,
+				02EB2AFE289FD2FE00DA44BE /* Demo.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -347,6 +277,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 0;
 			files = (
+				02BFB48028A11B7300FD61EF /* MetalView.swift in Sources */,
 				OBJ_35 /* Engine.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -366,11 +297,6 @@
 			isa = PBXTargetDependency;
 			target = "tmlengines::MetalEngine" /* MetalEngine */;
 			targetProxy = 02EB2B0D289FD43D00DA44BE /* PBXContainerItemProxy */;
-		};
-		OBJ_29 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = "tmlengines::MetalEngine" /* MetalEngine */;
-			targetProxy = 02EB2AF4289FD09700DA44BE /* PBXContainerItemProxy */;
 		};
 		OBJ_45 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -413,11 +339,11 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_ENTITLEMENTS = Sources/DemoApp/DemoApp.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Sources/Demo/Demo.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"Sources/DemoApp/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_PREVIEWS = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -486,12 +412,12 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_ENTITLEMENTS = Sources/DemoApp/DemoApp.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Sources/Demo/Demo.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"Sources/DemoApp/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -518,60 +444,6 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "3,4";
-			};
-			name = Release;
-		};
-		OBJ_23 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CURRENT_PROJECT_VERSION = 1;
-				DRIVERKIT_DEPLOYMENT_TARGET = 19.0;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
-				);
-				HEADER_SEARCH_PATHS = "$(inherited)";
-				INFOPLIST_FILE = TMLEngines.xcodeproj/Demo_Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) $(TOOLCHAIN_DIR)/usr/lib/swift/macosx @executable_path";
-				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				OTHER_CFLAGS = "$(inherited)";
-				OTHER_LDFLAGS = "$(inherited)";
-				OTHER_SWIFT_FLAGS = "$(inherited)";
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
-				SWIFT_FORCE_DYNAMIC_LINK_STDLIB = YES;
-				SWIFT_FORCE_STATIC_LINK_STDLIB = NO;
-				SWIFT_VERSION = 5.0;
-				TARGET_NAME = Demo;
-				TVOS_DEPLOYMENT_TARGET = 11.0;
-				WATCHOS_DEPLOYMENT_TARGET = 4.0;
-			};
-			name = Debug;
-		};
-		OBJ_24 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CURRENT_PROJECT_VERSION = 1;
-				DRIVERKIT_DEPLOYMENT_TARGET = 19.0;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
-				);
-				HEADER_SEARCH_PATHS = "$(inherited)";
-				INFOPLIST_FILE = TMLEngines.xcodeproj/Demo_Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) $(TOOLCHAIN_DIR)/usr/lib/swift/macosx @executable_path";
-				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				OTHER_CFLAGS = "$(inherited)";
-				OTHER_LDFLAGS = "$(inherited)";
-				OTHER_SWIFT_FLAGS = "$(inherited)";
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
-				SWIFT_FORCE_DYNAMIC_LINK_STDLIB = YES;
-				SWIFT_FORCE_STATIC_LINK_STDLIB = NO;
-				SWIFT_VERSION = 5.0;
-				TARGET_NAME = Demo;
-				TVOS_DEPLOYMENT_TARGET = 11.0;
-				WATCHOS_DEPLOYMENT_TARGET = 4.0;
 			};
 			name = Release;
 		};
@@ -745,7 +617,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		02EB2B07289FD30000DA44BE /* Build configuration list for PBXNativeTarget "DemoApp" */ = {
+		02EB2B07289FD30000DA44BE /* Build configuration list for PBXNativeTarget "Demo" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				02EB2B08289FD30000DA44BE /* Debug */,
@@ -759,15 +631,6 @@
 			buildConfigurations = (
 				OBJ_3 /* Debug */,
 				OBJ_4 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		OBJ_22 /* Build configuration list for PBXNativeTarget "Demo" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				OBJ_23 /* Debug */,
-				OBJ_24 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

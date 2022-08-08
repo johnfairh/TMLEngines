@@ -14,9 +14,6 @@ let package = Package(
     .executable(
         name: "Demo",
         targets: ["Demo"]),
-    .executable(
-        name: "DemoApp",
-        targets: ["DemoApp"]),
     ],
     dependencies: [
     ],
@@ -29,10 +26,7 @@ let package = Package(
         dependencies: ["MetalEngine"]),
       .executableTarget(
         name: "Demo",
-        dependencies: ["MetalEngine"]),
-      .executableTarget(
-        name: "DemoApp",
         dependencies: ["MetalEngine"],
-        exclude: ["Assets.xcassets", "Preview Content", "DemoApp.entitlements"])
+        exclude: ["Assets.xcassets", "Demo.entitlements"])
     ]
 )

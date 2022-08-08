@@ -43,8 +43,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "02EB2AFA289FD2FE00DA44BE"
-               BuildableName = "DemoApp.app"
-               BlueprintName = "DemoApp"
+               BuildableName = "Demo.app"
+               BlueprintName = "Demo"
                ReferencedContainer = "container:TMLEngines.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -94,8 +94,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "02EB2AFA289FD2FE00DA44BE"
-            BuildableName = "DemoApp.app"
-            BlueprintName = "DemoApp"
+            BuildableName = "Demo.app"
+            BlueprintName = "Demo"
             ReferencedContainer = "container:TMLEngines.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
