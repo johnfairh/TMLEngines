@@ -12,7 +12,8 @@ import MetalEngine
 struct Demo: App {
     var body: some Scene {
         WindowGroup {
-            MetalView()
+            MetalView(setup: {_ in }, frame: {_ in })
+                .frame(width: 200, height: 100)
         }
     }
 

@@ -1,6 +1,18 @@
-public struct Engine {
-    public private(set) var text = "Hello, World!"
+//
+//  MetalView.swift
+//  MetalEngine
+//
+//  Licensed under MIT (https://github.com/johnfairh/TMLEngines/blob/main/LICENSE
+//
 
-    public init() {
-    }
+import Foundation
+
+public protocol Engine {
+    /// Set the background color
+    func setBackgroundColor(r: Double, g: Double, b: Double, a: Double)
+
+    /// Accessors for game screen size
+    var viewportSize: CGSize { get }
 }
+
+typealias EngineCall = (Engine) -> Void

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		02BFB48028A11B7300FD61EF /* MetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02BFB47F28A11B7300FD61EF /* MetalView.swift */; };
+		02BFB48228A4FF7700FD61EF /* Renderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02BFB48128A4FF7700FD61EF /* Renderer.swift */; };
 		02EB2AFE289FD2FE00DA44BE /* Demo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02EB2AFD289FD2FE00DA44BE /* Demo.swift */; };
 		02EB2B02289FD30000DA44BE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 02EB2B01289FD30000DA44BE /* Assets.xcassets */; };
 		02EB2B0B289FD43D00DA44BE /* MetalEngine.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "tmlengines::MetalEngine::Product" /* MetalEngine.framework */; };
@@ -50,6 +51,7 @@
 
 /* Begin PBXFileReference section */
 		02BFB47F28A11B7300FD61EF /* MetalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalView.swift; sourceTree = "<group>"; };
+		02BFB48128A4FF7700FD61EF /* Renderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Renderer.swift; sourceTree = "<group>"; };
 		02EB2AFB289FD2FE00DA44BE /* Demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Demo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		02EB2AFD289FD2FE00DA44BE /* Demo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Demo.swift; sourceTree = "<group>"; };
 		02EB2B01289FD30000DA44BE /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -111,6 +113,7 @@
 			children = (
 				OBJ_11 /* Engine.swift */,
 				02BFB47F28A11B7300FD61EF /* MetalView.swift */,
+				02BFB48128A4FF7700FD61EF /* Renderer.swift */,
 			);
 			name = MetalEngine;
 			path = Sources/MetalEngine;
@@ -278,6 +281,7 @@
 			buildActionMask = 0;
 			files = (
 				02BFB48028A11B7300FD61EF /* MetalView.swift in Sources */,
+				02BFB48228A4FF7700FD61EF /* Renderer.swift in Sources */,
 				OBJ_35 /* Engine.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
