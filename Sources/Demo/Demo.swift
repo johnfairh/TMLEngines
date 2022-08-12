@@ -13,7 +13,7 @@ struct Demo: App {
     var body: some Scene {
         WindowGroup {
             MetalView(setup: {_ in }, frame: {_ in })
-                .frame(width: 200, height: 100)
+                .frame(minWidth: 200, minHeight: 100)
         }
     }
 

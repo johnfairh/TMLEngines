@@ -8,23 +8,23 @@
 import MetalKit
 
 class Renderer: NSObject, Engine, MTKViewDelegate {
-    func setBackgroundColor(r: Double, g: Double, b: Double, a: Double) {
-    }
+    private(set) var clearColor: MTLClearColor
+    private(set) var viewportSize: CGSize
 
-    var viewportSize: CGSize {
-        .init()
+    func setBackgroundColor(r: Double, g: Double, b: Double, a: Double) {
+        clearColor = MTLClearColor(red: r, green: g, blue: b, alpha: a)
     }
 
     let metalDevice: MTLDevice // might not need this, is in MTKView ... but should we be independent of that really?
     let metalCommandQueue: MTLCommandQueue
-    let setup: EngineCall
-    let frame: EngineCall
+    let clientSetup: EngineCall
+    let clientFrame: EngineCall
 
     public init(view: MTKView,
                 setup: @escaping (any Engine) -> Void,
                 frame: @escaping (any Engine) -> Void) {
-        self.setup = setup
-        self.frame = frame
+        self.clientSetup = setup
+        self.clientFrame = frame
 
         guard let metalDevice = MTLCreateSystemDefaultDevice() else {
             preconditionFailure("MTLCreateSystemDefaultDevice")
@@ -35,32 +35,39 @@ class Renderer: NSObject, Engine, MTKViewDelegate {
             preconditionFailure("MTLMakeCommandQueue")
         }
         self.metalCommandQueue = commandQueue
+        self.clearColor = MTLClearColor(red: 0, green: 1, blue: 0, alpha: 0)
+        self.viewportSize = view.frame.size
         super.init()
 
         view.delegate = self
         view.preferredFramesPerSecond = 60
         view.enableSetNeedsDisplay = true
         view.framebufferOnly = false
-        view.clearColor = MTLClearColor(red: 0, green: 0, blue: 0, alpha: 0)
         view.drawableSize = view.frame.size
         view.enableSetNeedsDisplay = true
+
+        clientSetup(self)
     }
 
     public func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
+        viewportSize = size
     }
 
     public func draw(in view: MTKView) {
-        guard let drawable = view.currentDrawable else {
+        guard let drawable = view.currentDrawable,
+              let rpd = view.currentRenderPassDescriptor,
+              let commandBuffer = metalCommandQueue.makeCommandBuffer() else {
+            print("No resources to generate frame #1")
             return
         }
-        let commandBuffer = metalCommandQueue.makeCommandBuffer()
-        let rpd = view.currentRenderPassDescriptor
-        rpd?.colorAttachments[0].clearColor = MTLClearColorMake(0, 1, 0, 1)
-        rpd?.colorAttachments[0].loadAction = .clear
-        rpd?.colorAttachments[0].storeAction = .store
-        let re = commandBuffer?.makeRenderCommandEncoder(descriptor: rpd!)
-        re?.endEncoding()
-        commandBuffer?.present(drawable)
-        commandBuffer?.commit()
+        rpd.colorAttachments[0].clearColor = clearColor
+        guard let encoder = commandBuffer.makeRenderCommandEncoder(descriptor: rpd) else {
+            print("No resources to generate frame #2")
+            return
+        }
+        clientFrame(self)
+        encoder.endEncoding()
+        commandBuffer.present(drawable)
+        commandBuffer.commit()
     }
 }

@@ -8,20 +8,27 @@
 import SwiftUI
 import MetalKit
 
+/// A SwiftUI view wrapping a Metal implementation of the ``Engine`` protocol.
 public struct MetalView: NSViewRepresentable {
     let setup: EngineCall
     let frame: EngineCall
 
+    /// Create a Metal view whose content is determined by the client callbacks.
+    ///
+    /// - parameter setup: Called once before any frame callbacks to create textures, fonts etc.
+    /// - parameter frame: Called once per frame to render the view
     public init(setup: @escaping (any Engine) -> Void,
                 frame: @escaping (any Engine) -> Void) {
         self.setup = setup
         self.frame = frame
     }
-    
+
+    /// :nodoc: SwiftUI implementation
     public func makeCoordinator() -> Coordinator {
         Coordinator(self)
     }
 
+    /// :nodoc: SwiftUI implementation
     public class Coordinator {
         let parent: MetalView
         var renderer: Renderer?
@@ -31,6 +38,7 @@ public struct MetalView: NSViewRepresentable {
         }
     }
 
+    /// :nodoc: SwiftUI implementation
     public func makeNSView(context: NSViewRepresentableContext<MetalView>) -> MTKView {
         let mtkView = MTKView()
         context.coordinator.renderer = Renderer(view: mtkView,
@@ -39,6 +47,8 @@ public struct MetalView: NSViewRepresentable {
         return mtkView
     }
 
+    /// :nodoc: SwiftUI implementation
     public func updateNSView(_ nsView: MTKView, context: NSViewRepresentableContext<MetalView>) {
+        // still not sure what this is for
     }
 }

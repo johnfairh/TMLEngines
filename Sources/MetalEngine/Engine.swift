@@ -7,11 +7,12 @@
 
 import Foundation
 
+/// An asbtract interface to a graphics engine, create using ``MetalView``
 public protocol Engine {
     /// Set the background color
     func setBackgroundColor(r: Double, g: Double, b: Double, a: Double)
 
-    /// Accessors for game screen size
+    /// Accessor for game screen size
     var viewportSize: CGSize { get }
 }
 
