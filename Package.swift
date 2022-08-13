@@ -20,7 +20,9 @@ let package = Package(
     targets: [
       .target(
         name: "MetalEngine",
-        dependencies: []),
+        dependencies: [],
+        exclude: ["Metal/Shaders.metal"],
+        resources: [.process("Metal/default.metallib")]),
       .testTarget(
         name: "MetalEngineTests",
         dependencies: ["MetalEngine"]),

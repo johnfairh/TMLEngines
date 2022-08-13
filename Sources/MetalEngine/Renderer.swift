@@ -20,6 +20,8 @@ class Renderer: NSObject, Engine, MTKViewDelegate {
     let clientSetup: EngineCall
     let clientFrame: EngineCall
 
+    private(set) var passthroughPipeline: MTLRenderPipelineState! = nil
+
     public init(view: MTKView,
                 setup: @escaping (any Engine) -> Void,
                 frame: @escaping (any Engine) -> Void) {
@@ -36,21 +38,47 @@ class Renderer: NSObject, Engine, MTKViewDelegate {
         }
         self.metalCommandQueue = commandQueue
         self.clearColor = MTLClearColor(red: 0, green: 1, blue: 0, alpha: 0)
-        self.viewportSize = view.frame.size
+        self.viewportSize = view.frame.size // XXX need to decide if this should be points or pixels
         super.init()
 
         view.delegate = self
-        view.preferredFramesPerSecond = 60
-        view.enableSetNeedsDisplay = true
-        view.framebufferOnly = false
-        view.drawableSize = view.frame.size
-        view.enableSetNeedsDisplay = true
+
+        buildPipelines()
 
         clientSetup(self)
     }
 
     public func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
-        viewportSize = size
+        viewportSize = size // XXX need to decide if this should be points or pixels
+    }
+
+    func buildPipelines() {
+#if SWIFT_PACKAGE
+        let bundle = Bundle.module
+#else
+        let bundle = Bundle(for: Self.self)
+#endif
+
+        guard let library = try? metalDevice.makeDefaultLibrary(bundle: bundle) else {
+            preconditionFailure("Can't load metal shader library")
+        }
+        let functionNames = [
+            "vertex_passthrough",
+            "fragment_passthrough"
+        ]
+        let functions = Dictionary<String, MTLFunction>(
+            uniqueKeysWithValues: functionNames.map { name in
+                (name, library.makeFunction(name: name)!)
+            }
+        )
+
+        let passthroughDescriptor = MTLRenderPipelineDescriptor()
+        passthroughDescriptor.label = "Passthrough"
+        passthroughDescriptor.vertexFunction = functions["vertex_passthrough"]
+        passthroughDescriptor.fragmentFunction = functions["fragment_passthrough"]
+        passthroughDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
+
+        passthroughPipeline = try! metalDevice.makeRenderPipelineState(descriptor: passthroughDescriptor)
     }
 
     public func draw(in view: MTKView) {
