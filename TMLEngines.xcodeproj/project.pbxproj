@@ -54,6 +54,7 @@
 		02BFB47F28A11B7300FD61EF /* MetalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalView.swift; sourceTree = "<group>"; };
 		02BFB48128A4FF7700FD61EF /* Renderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Renderer.swift; sourceTree = "<group>"; };
 		02BFB48428A7B37F00FD61EF /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
+		02BFB4A628AA668E00FD61EF /* ShaderTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ShaderTypes.h; path = Sources/CMetalEngine/ShaderTypes.h; sourceTree = SOURCE_ROOT; };
 		02EB2AFB289FD2FE00DA44BE /* Demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Demo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		02EB2AFD289FD2FE00DA44BE /* Demo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Demo.swift; sourceTree = "<group>"; };
 		02EB2B01289FD30000DA44BE /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -124,6 +125,7 @@
 				OBJ_11 /* Engine.swift */,
 				02BFB47F28A11B7300FD61EF /* MetalView.swift */,
 				02BFB48128A4FF7700FD61EF /* Renderer.swift */,
+				02BFB4A628AA668E00FD61EF /* ShaderTypes.h */,
 				02BFB48328A7B36800FD61EF /* Metal */,
 			);
 			name = MetalEngine;
@@ -477,7 +479,11 @@
 					"$(inherited)",
 					"DEBUG=1",
 				);
+				HEADER_SEARCH_PATHS = "${SRCROOT}/Sources/CMetalEngine";
+				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MTL_HEADER_SEARCH_PATHS = "${SRCROOT}/Sources/CMetalEngine";
+				MTL_TREAT_WARNINGS_AS_ERRORS = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_SWIFT_FLAGS = "$(inherited) -DXcode";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -587,7 +593,11 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				GCC_OPTIMIZATION_LEVEL = s;
 				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
+				HEADER_SEARCH_PATHS = "${SRCROOT}/Sources/CMetalEngine";
+				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MTL_HEADER_SEARCH_PATHS = "${SRCROOT}/Sources/CMetalEngine";
+				MTL_TREAT_WARNINGS_AS_ERRORS = YES;
 				OTHER_SWIFT_FLAGS = "$(inherited) -DXcode";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;

@@ -1,0 +1,4 @@
+module CMetalEngine {
+  umbrella header "ShaderTypes.h"
+  export *
+}

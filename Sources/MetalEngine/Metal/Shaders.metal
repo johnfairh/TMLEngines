@@ -8,6 +8,8 @@
 #include <metal_stdlib>
 using namespace metal;
 
+#include "ShaderTypes.h"
+
 struct ColoredVertex
 {
     float4 position [[position]];

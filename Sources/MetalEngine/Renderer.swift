@@ -5,7 +5,23 @@
 //  Licensed under MIT (https://github.com/johnfairh/TMLEngines/blob/main/LICENSE
 //
 
+// * Uniforms buffer
+// * Fix viewportsize API (points)
+// * Use matrix to express coords in points, centre system
+// * Figure steam coord system
+// * Add translation
+// * Switch to per-vertex style
+// * Explore points
+// * Add proper add/flush-point APIs
+// * Write starfield
+// * Lines
+// * Text
+// * ...
+// * Research triple-buffer thing
+
 import MetalKit
+
+import CMetalEngine
 
 class Renderer: NSObject, Engine, MTKViewDelegate {
     private(set) var clearColor: MTLClearColor
@@ -71,8 +87,8 @@ class Renderer: NSObject, Engine, MTKViewDelegate {
             passthroughDescriptor.fragmentFunction = library.makeFunction(name: fragment)!
             passthroughDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
             return try! metalDevice.makeRenderPipelineState(descriptor: passthroughDescriptor)
-
         }
+
         passthroughPipeline = makePipeline("Passthrough", "vertex_passthrough", "fragment_passthrough")
     }
 

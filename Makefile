@@ -9,6 +9,10 @@ shader_dir := Sources/MetalEngine/Metal
 
 metal := ${shader_dir}/Shaders.metal
 
+metalinclude := Sources/CMetalEngine
+
+metalheader := ${metalinclude}/ShaderTypes.h
+
 metallib := ${shader_dir}/default.metallib
 
 tmpfile := Lib.air
@@ -16,7 +20,7 @@ tmpfile := Lib.air
 all: ${metallib}
 	swift run
 
-${metallib}: ${metal}
-	xcrun metal -c $^ -o ${tmpfile}
+${metallib}: ${metal} ${metalheader}
+	xcrun metal -c ${metal} -o ${tmpfile} -I${metalinclude}
 	xcrun metallib ${tmpfile} -o $@
 	rm ${tmpfile}
