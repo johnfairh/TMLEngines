@@ -6,7 +6,6 @@
 //
 
 // * Uniforms buffer
-// * Fix viewportsize API (points)
 // * Use matrix to express coords in points, centre system
 // * Figure steam coord system
 // * Add translation
@@ -54,7 +53,7 @@ class Renderer: NSObject, Engine, MTKViewDelegate {
         }
         self.metalCommandQueue = commandQueue
         self.clearColor = MTLClearColor(red: 0, green: 1, blue: 0, alpha: 0)
-        self.viewportSize = view.frame.size // XXX need to decide if this should be points or pixels
+        self.viewportSize = .zero
         super.init()
 
         view.delegate = self
@@ -66,7 +65,9 @@ class Renderer: NSObject, Engine, MTKViewDelegate {
     }
 
     public func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
-        viewportSize = size // XXX need to decide if this should be points or pixels YYY has to be points
+        if let window = view.window {
+            viewportSize = window.convertFromBacking(NSRect(origin: .zero, size: size)).size
+        }
     }
 
     func buildPipelines() {

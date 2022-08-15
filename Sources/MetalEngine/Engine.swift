@@ -12,7 +12,7 @@ public protocol Engine {
     /// Set the background color
     func setBackgroundColor(r: Double, g: Double, b: Double, a: Double)
 
-    /// Accessor for game screen size
+    /// Accessor for game screen size in points
     var viewportSize: CGSize { get }
 }
 
