@@ -20,8 +20,8 @@ struct ColoredVertex {
     float4 color;
 };
 
-vertex ColoredVertex vertex_passthrough(Vertex in [[stage_in]],
-                                        constant Uniforms & uniforms [[buffer(BufferIndexUniforms)]]) {
+vertex ColoredVertex vertex_2d(Vertex in [[stage_in]],
+                               constant Uniforms & uniforms [[buffer(BufferIndexUniform)]]) {
     ColoredVertex vert;
     vert.position = uniforms.projectionMatrix * float4(in.position, 0, 1);
     vert.color = float4(in.color, 1);

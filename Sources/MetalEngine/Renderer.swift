@@ -5,7 +5,6 @@
 //  Licensed under MIT (https://github.com/johnfairh/TMLEngines/blob/main/LICENSE
 //
 
-// * Switch to per-vertex style - with float2 or ..3 in code
 // * Rename vertex shader!
 // * Figure out timing requirements
 // * Explore points
@@ -53,7 +52,7 @@ class Renderer: NSObject, Engine, MTKViewDelegate {
     let clientSetup: EngineCall
     let clientFrame: EngineCall
 
-    private(set) var passthroughPipeline: MTLRenderPipelineState! = nil
+    private(set) var twoDPipeline: MTLRenderPipelineState! = nil
 
     // MARK: Setup
 
@@ -95,7 +94,7 @@ class Renderer: NSObject, Engine, MTKViewDelegate {
             preconditionFailure("Can't load metal shader library")
         }
 
-        let vertexDescriptor = Vertex.buildVertexDescriptor(bufferIndex: .vertexPositions)
+        let vertexDescriptor = Vertex.buildVertexDescriptor(bufferIndex: .vertex)
 
         func makePipeline(_ label: String, _ vertex: String, _ fragment: String) -> MTLRenderPipelineState {
             let pipelineDescriptor = MTLRenderPipelineDescriptor()
@@ -107,7 +106,7 @@ class Renderer: NSObject, Engine, MTKViewDelegate {
             return try! metalDevice.makeRenderPipelineState(descriptor: pipelineDescriptor)
         }
 
-        passthroughPipeline = makePipeline("Passthrough", "vertex_passthrough", "fragment_passthrough")
+        twoDPipeline = makePipeline("TwoD", "vertex_2d", "fragment_passthrough")
     }
 
     // MARK: Uniforms management
@@ -139,7 +138,7 @@ class Renderer: NSObject, Engine, MTKViewDelegate {
     }
 
     private func setUniforms(in encoder: MTLRenderCommandEncoder) {
-        encoder.setVertexBytes(&uniforms, length: MemoryLayout<Uniforms>.stride, index: BufferIndex.uniforms.rawValue)
+        encoder.setVertexBytes(&uniforms, length: MemoryLayout<Uniforms>.stride, index: BufferIndex.uniform.rawValue)
     }
 
     // MARK: Frame
@@ -178,8 +177,8 @@ class Renderer: NSObject, Engine, MTKViewDelegate {
     }
 
     func bufferRender(encoder: MTLRenderCommandEncoder) {
-        encoder.setRenderPipelineState(passthroughPipeline)
-        encoder.setVertexBuffer(vertexBuffer, offset: 0, index: BufferIndex.vertexPositions.rawValue)
+        encoder.setRenderPipelineState(twoDPipeline)
+        encoder.setVertexBuffer(vertexBuffer, offset: 0, index: BufferIndex.vertex.rawValue)
         encoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 3, instanceCount: 1)
     }
 }
