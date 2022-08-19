@@ -10,22 +10,24 @@ using namespace metal;
 
 #include "ShaderTypes.h"
 
-struct ColoredVertex
-{
+struct Vertex {
+    float2 position [[attribute(VertexAttrPosition)]];
+    float3 color    [[attribute(VertexAttrColor)]];
+};
+
+struct ColoredVertex {
     float4 position [[position]];
     float4 color;
 };
 
 vertex ColoredVertex vertex_passthrough(Vertex in [[stage_in]],
-                                        constant Uniforms & uniforms [[ buffer(BufferIndexUniforms) ]])
-{
+                                        constant Uniforms & uniforms [[buffer(BufferIndexUniforms)]]) {
     ColoredVertex vert;
     vert.position = uniforms.projectionMatrix * float4(in.position, 0, 1);
     vert.color = float4(in.color, 1);
     return vert;
 }
 
-fragment float4 fragment_passthrough(ColoredVertex vert [[stage_in]])
-{
+fragment float4 fragment_passthrough(ColoredVertex vert [[stage_in]]) {
     return vert.color;
 }

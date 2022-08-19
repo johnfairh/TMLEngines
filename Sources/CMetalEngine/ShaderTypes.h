@@ -37,9 +37,4 @@ typedef struct
     matrix_float4x4 projectionMatrix;
 } Uniforms;
 
-typedef struct {
-    vector_float2 position METAL([[attribute(VertexAttrPosition)]]);
-    vector_float3 color    METAL([[attribute(VertexAttrColor)]]);
-} Vertex;
-
 #endif /* ShaderTypes_h */

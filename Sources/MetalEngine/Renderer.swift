@@ -20,6 +20,26 @@ import MetalKit
 
 import CMetalEngine
 
+/// Vertex data as stored in the buffer - don't use any clever types so that everything packs correctly
+struct Vertex {
+    /// 2D coordinates, origin top-left
+    let x, y: Float
+    /// RGB 0-1 components
+    let r, g, b: Float
+
+    static func buildVertexDescriptor(bufferIndex: BufferIndex) -> MTLVertexDescriptor {
+        let vertexDescriptor = MTLVertexDescriptor()
+        vertexDescriptor.attributes[VertexAttr.position.rawValue].format = .float2
+        vertexDescriptor.attributes[VertexAttr.position.rawValue].offset = 0
+        vertexDescriptor.attributes[VertexAttr.position.rawValue].bufferIndex = bufferIndex.rawValue
+        vertexDescriptor.attributes[VertexAttr.color.rawValue].format = .float3
+        vertexDescriptor.attributes[VertexAttr.color.rawValue].offset = MemoryLayout<Vertex>.offset(of: \.r)!
+        vertexDescriptor.attributes[VertexAttr.color.rawValue].bufferIndex = bufferIndex.rawValue
+        vertexDescriptor.layouts[0].stride = MemoryLayout<Vertex>.stride
+        return vertexDescriptor
+    }
+}
+
 class Renderer: NSObject, Engine, MTKViewDelegate {
     private(set) var clearColor: MTLClearColor
     private(set) var viewportSize: SIMD2<Float>
@@ -75,14 +95,7 @@ class Renderer: NSObject, Engine, MTKViewDelegate {
             preconditionFailure("Can't load metal shader library")
         }
 
-        let vertexDescriptor = MTLVertexDescriptor()
-        vertexDescriptor.attributes[VertexAttr.position.rawValue].format = .float2
-        vertexDescriptor.attributes[VertexAttr.position.rawValue].offset = 0
-        vertexDescriptor.attributes[VertexAttr.position.rawValue].bufferIndex = BufferIndex.vertexPositions.rawValue
-        vertexDescriptor.attributes[VertexAttr.color.rawValue].format = .float3
-        vertexDescriptor.attributes[VertexAttr.color.rawValue].offset = MemoryLayout<Vertex>.offset(of: \.color)!
-        vertexDescriptor.attributes[VertexAttr.color.rawValue].bufferIndex = BufferIndex.vertexPositions.rawValue
-        vertexDescriptor.layouts[0].stride = MemoryLayout<Vertex>.stride
+        let vertexDescriptor = Vertex.buildVertexDescriptor(bufferIndex: .vertexPositions)
 
         func makePipeline(_ label: String, _ vertex: String, _ fragment: String) -> MTLRenderPipelineState {
             let pipelineDescriptor = MTLRenderPipelineDescriptor()
@@ -153,9 +166,9 @@ class Renderer: NSObject, Engine, MTKViewDelegate {
     }
 
     let vertexData: [Vertex] = [
-        Vertex(position: .init(x: 400, y: 100), color: .init(x: 1, y: 0, z: 0)),
-        Vertex(position: .init(x: 100, y: 600), color: .init(x: 0, y: 1, z: 0)),
-        Vertex(position: .init(x: 700, y: 600), color: .init(x: 0, y: 0, z: 1)),
+        Vertex(x: 400, y: 100, r: 1, g: 0, b: 0),
+        Vertex(x: 100, y: 600, r: 0, g: 1, b: 0),
+        Vertex(x: 700, y: 600, r: 0, g: 0, b: 1),
     ]
 
     var vertexBuffer: MTLBuffer!
