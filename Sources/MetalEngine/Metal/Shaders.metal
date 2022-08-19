@@ -16,14 +16,12 @@ struct ColoredVertex
     float4 color;
 };
 
-vertex ColoredVertex vertex_passthrough(constant float4 *position [[buffer(BufferIndexVertexPositions)]],
-                                        constant float4 *color [[buffer(BufferIndexVertexColors)]],
-                                        constant Uniforms & uniforms [[ buffer(BufferIndexUniforms) ]],
-                                        uint vid [[vertex_id]])
+vertex ColoredVertex vertex_passthrough(Vertex in [[stage_in]],
+                                        constant Uniforms & uniforms [[ buffer(BufferIndexUniforms) ]])
 {
     ColoredVertex vert;
-    vert.position = uniforms.projectionMatrix * position[vid];
-    vert.color = color[vid];
+    vert.position = uniforms.projectionMatrix * float4(in.position, 0, 1);
+    vert.color = float4(in.color, 1);
     return vert;
 }
 

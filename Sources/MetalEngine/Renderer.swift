@@ -75,13 +75,23 @@ class Renderer: NSObject, Engine, MTKViewDelegate {
             preconditionFailure("Can't load metal shader library")
         }
 
+        let vertexDescriptor = MTLVertexDescriptor()
+        vertexDescriptor.attributes[VertexAttr.position.rawValue].format = .float2
+        vertexDescriptor.attributes[VertexAttr.position.rawValue].offset = 0
+        vertexDescriptor.attributes[VertexAttr.position.rawValue].bufferIndex = BufferIndex.vertexPositions.rawValue
+        vertexDescriptor.attributes[VertexAttr.color.rawValue].format = .float3
+        vertexDescriptor.attributes[VertexAttr.color.rawValue].offset = MemoryLayout<Vertex>.offset(of: \.color)!
+        vertexDescriptor.attributes[VertexAttr.color.rawValue].bufferIndex = BufferIndex.vertexPositions.rawValue
+        vertexDescriptor.layouts[0].stride = MemoryLayout<Vertex>.stride
+
         func makePipeline(_ label: String, _ vertex: String, _ fragment: String) -> MTLRenderPipelineState {
-            let passthroughDescriptor = MTLRenderPipelineDescriptor()
-            passthroughDescriptor.label = label
-            passthroughDescriptor.vertexFunction = library.makeFunction(name: vertex)!
-            passthroughDescriptor.fragmentFunction = library.makeFunction(name: fragment)!
-            passthroughDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
-            return try! metalDevice.makeRenderPipelineState(descriptor: passthroughDescriptor)
+            let pipelineDescriptor = MTLRenderPipelineDescriptor()
+            pipelineDescriptor.label = label
+            pipelineDescriptor.vertexFunction = library.makeFunction(name: vertex)!
+            pipelineDescriptor.fragmentFunction = library.makeFunction(name: fragment)!
+            pipelineDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
+            pipelineDescriptor.vertexDescriptor = vertexDescriptor
+            return try! metalDevice.makeRenderPipelineState(descriptor: pipelineDescriptor)
         }
 
         passthroughPipeline = makePipeline("Passthrough", "vertex_passthrough", "fragment_passthrough")
@@ -142,31 +152,21 @@ class Renderer: NSObject, Engine, MTKViewDelegate {
         commandBuffer.commit()
     }
 
-    let positionPoints: [Float] = [
-        400, 100, 0, 1,
-        100, 600, 0, 1,
-        700, 600, 0, 1,
+    let vertexData: [Vertex] = [
+        Vertex(position: .init(x: 400, y: 100), color: .init(x: 1, y: 0, z: 0)),
+        Vertex(position: .init(x: 100, y: 600), color: .init(x: 0, y: 1, z: 0)),
+        Vertex(position: .init(x: 700, y: 600), color: .init(x: 0, y: 0, z: 1)),
     ]
 
-    var positionBuffer: MTLBuffer!
-
-    let colourValues: [Float] = [
-        1, 0, 0, 1,
-        0, 1, 0, 1,
-        0, 0, 1, 1,
-    ]
-
-    var colourBuffer: MTLBuffer!
+    var vertexBuffer: MTLBuffer!
 
     func bufferSetup() {
-        positionBuffer = metalDevice.makeBuffer(bytes: positionPoints, length: MemoryLayout<Float>.stride * positionPoints.count)
-        colourBuffer = metalDevice.makeBuffer(bytes: colourValues, length: MemoryLayout<Float>.stride * colourValues.count)
+        vertexBuffer = metalDevice.makeBuffer(bytes: vertexData, length: MemoryLayout<Vertex>.stride * vertexData.count)
     }
 
     func bufferRender(encoder: MTLRenderCommandEncoder) {
         encoder.setRenderPipelineState(passthroughPipeline)
-        encoder.setVertexBuffer(positionBuffer, offset: 0, index: BufferIndex.vertexPositions.rawValue)
-        encoder.setVertexBuffer(colourBuffer, offset: 0, index: BufferIndex.vertexColors.rawValue)
+        encoder.setVertexBuffer(vertexBuffer, offset: 0, index: BufferIndex.vertexPositions.rawValue)
         encoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 3, instanceCount: 1)
     }
 }
