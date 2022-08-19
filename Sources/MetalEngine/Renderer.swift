@@ -5,7 +5,6 @@
 //  Licensed under MIT (https://github.com/johnfairh/TMLEngines/blob/main/LICENSE
 //
 
-// * Pull uniform calc out of primitive loop
 // * Switch to per-vertex style - with float2 or ..3 in code
 // * Rename vertex shader!
 // * Figure out timing requirements
@@ -36,6 +35,8 @@ class Renderer: NSObject, Engine, MTKViewDelegate {
 
     private(set) var passthroughPipeline: MTLRenderPipelineState! = nil
 
+    // MARK: Setup
+
     public init(view: MTKView,
                 setup: @escaping (any Engine) -> Void,
                 frame: @escaping (any Engine) -> Void) {
@@ -63,15 +64,7 @@ class Renderer: NSObject, Engine, MTKViewDelegate {
         clientSetup(self)
     }
 
-    public func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
-        if let window = view.window {
-            let cgSize = window.convertFromBacking(NSRect(origin: .zero, size: size)).size
-            viewportSize.x = Float(cgSize.width)
-            viewportSize.y = Float(cgSize.height)
-        }
-    }
-
-    func buildPipelines() {
+    private func buildPipelines() {
 #if SWIFT_PACKAGE
         let bundle = Bundle.module
 #else
@@ -94,6 +87,40 @@ class Renderer: NSObject, Engine, MTKViewDelegate {
         passthroughPipeline = makePipeline("Passthrough", "vertex_passthrough", "fragment_passthrough")
     }
 
+    // MARK: Uniforms management
+
+    public func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
+        if let window = view.window {
+            let cgSize = window.convertFromBacking(NSRect(origin: .zero, size: size)).size
+            viewportSize.x = Float(cgSize.width)
+            viewportSize.y = Float(cgSize.height)
+        }
+    }
+
+    private var uniforms = Uniforms()
+
+    /// The client coordinate system has a 0,0 origin in the top-left of the window and
+    /// has ``viewportSize`` points on each axis.
+    ///
+    /// The shaders expect a 'projection matrix' that converts this space to Metal clip space
+    /// which is square [-1,1].
+    private func updateUniforms() {
+        // Scale to [0,2]
+        let scale = matrix_float4x4(diagonal: .init(x: 2.0 / viewportSize.x, y: 2.0 / viewportSize.y, z: 1, w: 1))
+        // Translate to [-1,1]
+        var translate = matrix_float4x4(1)
+        translate.columns.3 = vector_float4(x: -1, y: -1, z: 0, w: 1)
+        // Flip vertical
+        let vflip = matrix_float4x4(diagonal: .init(x: 1, y: -1, z: 1, w: 1))
+        uniforms.projectionMatrix = vflip * translate * scale
+    }
+
+    private func setUniforms(in encoder: MTLRenderCommandEncoder) {
+        encoder.setVertexBytes(&uniforms, length: MemoryLayout<Uniforms>.stride, index: BufferIndex.uniforms.rawValue)
+    }
+
+    // MARK: Frame
+
     public func draw(in view: MTKView) {
         guard let drawable = view.currentDrawable,
               let rpd = view.currentRenderPassDescriptor,
@@ -101,11 +128,13 @@ class Renderer: NSObject, Engine, MTKViewDelegate {
             print("No resources to generate frame #1")
             return
         }
+        updateUniforms()
         rpd.colorAttachments[0].clearColor = clearColor
         guard let encoder = commandBuffer.makeRenderCommandEncoder(descriptor: rpd) else {
             print("No resources to generate frame #2")
             return
         }
+        setUniforms(in: encoder)
         clientFrame(self)
         bufferRender(encoder: encoder)
         encoder.endEncoding()
@@ -117,20 +146,11 @@ class Renderer: NSObject, Engine, MTKViewDelegate {
         400, 100, 0, 1,
         100, 600, 0, 1,
         700, 600, 0, 1,
-//        0.0, 0.5, 0, 1,
-//        -0.5, -0.5, 0, 1,
-//        0.5, -0.5, 0, 1,
-        -0.9, -0.9, 0, 1,
-        -0.7, -0.9, 0, 1,
-        -0.8, -0.7, 0, 1
     ]
 
     var positionBuffer: MTLBuffer!
 
     let colourValues: [Float] = [
-        1, 0, 0, 1,
-        0, 1, 0, 1,
-        0, 0, 1, 1,
         1, 0, 0, 1,
         0, 1, 0, 1,
         0, 0, 1, 1,
@@ -143,30 +163,10 @@ class Renderer: NSObject, Engine, MTKViewDelegate {
         colourBuffer = metalDevice.makeBuffer(bytes: colourValues, length: MemoryLayout<Float>.stride * colourValues.count)
     }
 
-    /// The client coordinate system has a 0,0 origin in the top-left of the window and
-    /// has ``viewportSize`` points on each axis.
-    ///
-    /// The shader expects a 'projection matrix' that converts this space to Metal clip space
-    /// which is square [-1,1].
-    func refreshUniforms() -> Uniforms {
-        // Scale to [0,2]
-        let scale = matrix_float4x4(diagonal: .init(x: 2.0 / viewportSize.x, y: 2.0 / viewportSize.y, z: 1, w: 1))
-        // Translate to [-1,1]
-        var translate = matrix_float4x4(1)
-        translate.columns.3 = vector_float4(x: -1, y: -1, z: 0, w: 1)
-        // Flip vertical
-        let vflip = matrix_float4x4(diagonal: .init(x: 1, y: -1, z: 1, w: 1))
-        return Uniforms(projectionMatrix: vflip * translate * scale)
-    }
-
     func bufferRender(encoder: MTLRenderCommandEncoder) {
-        var uniforms = refreshUniforms()
         encoder.setRenderPipelineState(passthroughPipeline)
         encoder.setVertexBuffer(positionBuffer, offset: 0, index: BufferIndex.vertexPositions.rawValue)
         encoder.setVertexBuffer(colourBuffer, offset: 0, index: BufferIndex.vertexColors.rawValue)
-        withUnsafeBytes(of: &uniforms) { ubp in
-            encoder.setVertexBytes(ubp.baseAddress!, length: ubp.count, index: BufferIndex.uniforms.rawValue)
-        }
         encoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 3, instanceCount: 1)
     }
 }
