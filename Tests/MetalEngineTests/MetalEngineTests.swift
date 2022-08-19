@@ -10,6 +10,5 @@ import XCTest
 
 final class MetalEngineTests: XCTestCase {
     func testExample() throws {
-        XCTAssertEqual(Engine().text, "Hello, World!")
     }
 }

@@ -8,12 +8,21 @@
 import Foundation
 
 /// An asbtract interface to a 2D graphics engine, create using ``MetalView``
-public protocol Engine {
+public protocol Engine2D {
     /// Set the background color
     func setBackgroundColor(r: Double, g: Double, b: Double, a: Double)
 
     /// Accessor for game screen size in points
     var viewportSize: SIMD2<Float> { get }
+
+    /// Poorly-encapsulated millisecond clock
+    typealias TickCount = UInt
+
+    /// Tick count - millisecond clock of the start of the current/most recent frame
+    var frameTimestamp: TickCount { get }
+
+    /// Milliseconds since the previous frame
+    var frameDelta: TickCount { get }
 }
 
-typealias EngineCall = (Engine) -> Void
+typealias Engine2DCall = (Engine2D) -> Void

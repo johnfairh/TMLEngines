@@ -5,13 +5,12 @@
 //  Licensed under MIT (https://github.com/johnfairh/TMLEngines/blob/main/LICENSE
 //
 
-// * Rename vertex shader!
-// * Figure out timing requirements
-// * Explore points
-// * Add proper add/flush-point APIs
+// * Sketch and write buffer manager, for triangle still
+// * Explore points, buffer manager
 // * Write starfield
 // * Lines
 // * Text
+// * Textures
 // * ...
 // * Research triple-buffer thing
 
@@ -39,9 +38,8 @@ struct Vertex {
     }
 }
 
-class Renderer: NSObject, Engine, MTKViewDelegate {
+class Renderer: NSObject, Engine2D, MTKViewDelegate {
     private(set) var clearColor: MTLClearColor
-    private(set) var viewportSize: SIMD2<Float>
 
     func setBackgroundColor(r: Double, g: Double, b: Double, a: Double) {
         clearColor = MTLClearColor(red: r, green: g, blue: b, alpha: a)
@@ -49,16 +47,16 @@ class Renderer: NSObject, Engine, MTKViewDelegate {
 
     let metalDevice: MTLDevice // might not need this, is in MTKView ... but should we be independent of that really?
     let metalCommandQueue: MTLCommandQueue
-    let clientSetup: EngineCall
-    let clientFrame: EngineCall
+    let clientSetup: Engine2DCall
+    let clientFrame: Engine2DCall
 
     private(set) var twoDPipeline: MTLRenderPipelineState! = nil
 
     // MARK: Setup
 
     public init(view: MTKView,
-                setup: @escaping (any Engine) -> Void,
-                frame: @escaping (any Engine) -> Void) {
+                setup: @escaping (any Engine2D) -> Void,
+                frame: @escaping (any Engine2D) -> Void) {
         self.clientSetup = setup
         self.clientFrame = frame
 
@@ -72,7 +70,6 @@ class Renderer: NSObject, Engine, MTKViewDelegate {
         }
         self.metalCommandQueue = commandQueue
         self.clearColor = MTLClearColor(red: 0, green: 1, blue: 0, alpha: 0)
-        self.viewportSize = .zero
         super.init()
 
         view.delegate = self
@@ -109,7 +106,9 @@ class Renderer: NSObject, Engine, MTKViewDelegate {
         twoDPipeline = makePipeline("TwoD", "vertex_2d", "fragment_passthrough")
     }
 
-    // MARK: Uniforms management
+    // MARK: Uniforms
+
+    private(set) var viewportSize: SIMD2<Float> = .zero
 
     public func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
         if let window = view.window {
@@ -141,6 +140,20 @@ class Renderer: NSObject, Engine, MTKViewDelegate {
         encoder.setVertexBytes(&uniforms, length: MemoryLayout<Uniforms>.stride, index: BufferIndex.uniform.rawValue)
     }
 
+    // MARK: Clock
+
+    private(set) var frameTimestamp = TickCount(0)
+    private      var prevFrameTimestamp = TickCount(0)
+
+    var frameDelta: TickCount {
+        frameTimestamp - prevFrameTimestamp
+    }
+
+    private func updateTickCount() {
+        prevFrameTimestamp = frameTimestamp
+        frameTimestamp = TickCount(CACurrentMediaTime() * 1000)
+    }
+
     // MARK: Frame
 
     public func draw(in view: MTKView) {
@@ -151,6 +164,7 @@ class Renderer: NSObject, Engine, MTKViewDelegate {
             return
         }
         updateUniforms()
+        updateTickCount()
         rpd.colorAttachments[0].clearColor = clearColor
         guard let encoder = commandBuffer.makeRenderCommandEncoder(descriptor: rpd) else {
             print("No resources to generate frame #2")

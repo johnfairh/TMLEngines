@@ -10,15 +10,15 @@ import MetalKit
 
 /// A SwiftUI view wrapping a Metal implementation of the ``Engine`` protocol.
 public struct MetalView: NSViewRepresentable {
-    let setup: EngineCall
-    let frame: EngineCall
+    let setup: Engine2DCall
+    let frame: Engine2DCall
 
     /// Create a Metal view whose content is determined by the client callbacks.
     ///
     /// - parameter setup: Called once before any frame callbacks to create textures, fonts etc.
     /// - parameter frame: Called once per frame to render the view
-    public init(setup: @escaping (any Engine) -> Void,
-                frame: @escaping (any Engine) -> Void) {
+    public init(setup: @escaping (any Engine2D) -> Void,
+                frame: @escaping (any Engine2D) -> Void) {
         self.setup = setup
         self.frame = frame
     }
