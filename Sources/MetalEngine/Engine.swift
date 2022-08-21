@@ -23,6 +23,9 @@ public protocol Engine2D {
 
     /// Milliseconds since the previous frame
     var frameDelta: TickCount { get }
+
+    /// Primitives
+    func drawTriangle(x0: Float, y0: Float, x1: Float, y1: Float, x2: Float, y2: Float)
 }
 
 typealias Engine2DCall = (Engine2D) -> Void

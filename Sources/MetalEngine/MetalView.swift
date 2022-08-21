@@ -41,9 +41,7 @@ public struct MetalView: NSViewRepresentable {
     /// :nodoc: SwiftUI implementation
     public func makeNSView(context: NSViewRepresentableContext<MetalView>) -> MTKView {
         let mtkView = MTKView()
-        context.coordinator.renderer = Renderer(view: mtkView,
-                                                setup: setup,
-                                                frame: frame)
+        context.coordinator.renderer = Renderer(view: mtkView, setup: setup, frame: frame)
         return mtkView
     }
 

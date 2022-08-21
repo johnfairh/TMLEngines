@@ -5,52 +5,29 @@
 //  Licensed under MIT (https://github.com/johnfairh/TMLEngines/blob/main/LICENSE
 //
 
-// * Sketch and write buffer manager, for triangle still
-// * Explore points, buffer manager
+// * Pull out prim-render, tidy bits and interfaces
+// * Figure out colour end-to-end, add back to demo, including background
+// * Explore points
 // * Write starfield
 // * Lines
 // * Text
 // * Textures
 // * ...
-// * Research triple-buffer thing
+// * Research triple-buffer thing (though I seem to have implemented it already!)
 
 import MetalKit
 
 import CMetalEngine
 
-/// Vertex data as stored in the buffer - don't use any clever types so that everything packs correctly
-struct Vertex {
-    /// 2D coordinates, origin top-left
-    let x, y: Float
-    /// RGB 0-1 components
-    let r, g, b: Float
-
-    static func buildVertexDescriptor(bufferIndex: BufferIndex) -> MTLVertexDescriptor {
-        let vertexDescriptor = MTLVertexDescriptor()
-        vertexDescriptor.attributes[VertexAttr.position.rawValue].format = .float2
-        vertexDescriptor.attributes[VertexAttr.position.rawValue].offset = 0
-        vertexDescriptor.attributes[VertexAttr.position.rawValue].bufferIndex = bufferIndex.rawValue
-        vertexDescriptor.attributes[VertexAttr.color.rawValue].format = .float3
-        vertexDescriptor.attributes[VertexAttr.color.rawValue].offset = MemoryLayout<Vertex>.offset(of: \.r)!
-        vertexDescriptor.attributes[VertexAttr.color.rawValue].bufferIndex = bufferIndex.rawValue
-        vertexDescriptor.layouts[0].stride = MemoryLayout<Vertex>.stride
-        return vertexDescriptor
-    }
-}
-
 class Renderer: NSObject, Engine2D, MTKViewDelegate {
-    private(set) var clearColor: MTLClearColor
-
-    func setBackgroundColor(r: Double, g: Double, b: Double, a: Double) {
-        clearColor = MTLClearColor(red: r, green: g, blue: b, alpha: a)
-    }
-
-    let metalDevice: MTLDevice // might not need this, is in MTKView ... but should we be independent of that really?
     let metalCommandQueue: MTLCommandQueue
+    private(set) var twoDPipeline: MTLRenderPipelineState! = nil
+
     let clientSetup: Engine2DCall
     let clientFrame: Engine2DCall
 
-    private(set) var twoDPipeline: MTLRenderPipelineState! = nil
+    let buffers: Buffers
+    let triangles: RenderPrimitives
 
     // MARK: Setup
 
@@ -63,31 +40,31 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         guard let metalDevice = MTLCreateSystemDefaultDevice() else {
             preconditionFailure("MTLCreateSystemDefaultDevice")
         }
-        self.metalDevice = metalDevice
         view.device = metalDevice
         guard let commandQueue = metalDevice.makeCommandQueue() else {
             preconditionFailure("MTLMakeCommandQueue")
         }
         self.metalCommandQueue = commandQueue
-        self.clearColor = MTLClearColor(red: 0, green: 1, blue: 0, alpha: 0)
+
+        self.buffers = Buffers(device: metalDevice)
+        self.triangles = RenderPrimitives(buffers: buffers, primitiveType: .triangle)
+
         super.init()
 
         view.delegate = self
 
-        buildPipelines()
-
-        bufferSetup()
+        buildPipelines(for: metalDevice)
         clientSetup(self)
     }
 
-    private func buildPipelines() {
+    private func buildPipelines(for device: MTLDevice) {
 #if SWIFT_PACKAGE
         let bundle = Bundle.module
 #else
         let bundle = Bundle(for: Self.self)
 #endif
 
-        guard let library = try? metalDevice.makeDefaultLibrary(bundle: bundle) else {
+        guard let library = try? device.makeDefaultLibrary(bundle: bundle) else {
             preconditionFailure("Can't load metal shader library")
         }
 
@@ -100,7 +77,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
             pipelineDescriptor.fragmentFunction = library.makeFunction(name: fragment)!
             pipelineDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
             pipelineDescriptor.vertexDescriptor = vertexDescriptor
-            return try! metalDevice.makeRenderPipelineState(descriptor: pipelineDescriptor)
+            return try! device.makeRenderPipelineState(descriptor: pipelineDescriptor)
         }
 
         twoDPipeline = makePipeline("TwoD", "vertex_2d", "fragment_passthrough")
@@ -138,12 +115,21 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
 
     private func setUniforms(in encoder: MTLRenderCommandEncoder) {
         encoder.setVertexBytes(&uniforms, length: MemoryLayout<Uniforms>.stride, index: BufferIndex.uniform.rawValue)
+        encoder.setFragmentBytes(&uniforms, length: MemoryLayout<Uniforms>.stride, index: BufferIndex.uniform.rawValue)
+    }
+
+    // MARK: Background colour
+
+    private(set) var clearColor = MTLClearColor(red: 0, green: 1, blue: 0, alpha: 0)
+
+    func setBackgroundColor(r: Double, g: Double, b: Double, a: Double) {
+        clearColor = MTLClearColor(red: r, green: g, blue: b, alpha: a)
     }
 
     // MARK: Clock
 
-    private(set) var frameTimestamp = TickCount(0)
-    private      var prevFrameTimestamp = TickCount(0)
+    private(set) var frameTimestamp = TickCount()
+    private      var prevFrameTimestamp = TickCount()
 
     var frameDelta: TickCount {
         frameTimestamp - prevFrameTimestamp
@@ -156,43 +142,87 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
 
     // MARK: Frame
 
+    typealias FrameID = UInt64
+    private(set) var frameID = FrameID(1000)
+    private var frameEncoder: MTLRenderCommandEncoder?
+
     public func draw(in view: MTKView) {
-        guard let drawable = view.currentDrawable,
-              let rpd = view.currentRenderPassDescriptor,
+        guard let rpd = view.currentRenderPassDescriptor,
               let commandBuffer = metalCommandQueue.makeCommandBuffer() else {
             print("No resources to generate frame #1")
             return
         }
         updateUniforms()
         updateTickCount()
+        buffers.startFrame()
+
         rpd.colorAttachments[0].clearColor = clearColor
         guard let encoder = commandBuffer.makeRenderCommandEncoder(descriptor: rpd) else {
             print("No resources to generate frame #2")
             return
         }
-        setUniforms(in: encoder)
-        clientFrame(self)
-        bufferRender(encoder: encoder)
-        encoder.endEncoding()
-        commandBuffer.present(drawable)
-        commandBuffer.commit()
-    }
-
-    let vertexData: [Vertex] = [
-        Vertex(x: 400, y: 100, r: 1, g: 0, b: 0),
-        Vertex(x: 100, y: 600, r: 0, g: 1, b: 0),
-        Vertex(x: 700, y: 600, r: 0, g: 0, b: 1),
-    ]
-
-    var vertexBuffer: MTLBuffer!
-
-    func bufferSetup() {
-        vertexBuffer = metalDevice.makeBuffer(bytes: vertexData, length: MemoryLayout<Vertex>.stride * vertexData.count)
-    }
-
-    func bufferRender(encoder: MTLRenderCommandEncoder) {
         encoder.setRenderPipelineState(twoDPipeline)
-        encoder.setVertexBuffer(vertexBuffer, offset: 0, index: BufferIndex.vertex.rawValue)
-        encoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 3, instanceCount: 1)
+        setUniforms(in: encoder)
+
+        frameEncoder = encoder
+        clientFrame(self)
+        frameEncoder = nil
+
+        triangles.flush(encoder: encoder)
+        buffers.endFrame(frameID: frameID)
+
+        encoder.endEncoding()
+        commandBuffer.present(view.currentDrawable!)
+        commandBuffer.addCompletedHandler { [frameID] _ in
+            self.buffers.completeFrame(frameID: frameID)
+        }
+        commandBuffer.commit()
+
+        frameID += 1
+    }
+
+    // MARK: Primitives
+
+    func drawTriangle(x0: Float, y0: Float, x1: Float, y1: Float, x2: Float, y2: Float) {
+        assert(frameEncoder != nil)
+        triangles.render(points: [
+            .init(x: x0, y: y0, r: 1, g: 0, b: 0),
+            .init(x: x1, y: y1, r: 1, g: 0, b: 0),
+            .init(x: x2, y: y2, r: 1, g: 0, b: 0),
+        ], encoder: frameEncoder!)
+    }
+}
+
+final class RenderPrimitives {
+    let buffers: Buffers
+    private var buffer: Buffer?
+    let primitiveType: MTLPrimitiveType
+
+    init(buffers: Buffers, primitiveType: MTLPrimitiveType) {
+        self.buffers = buffers
+        self.buffer = nil
+        self.primitiveType = primitiveType
+    }
+
+    func render(points: [Vertex], encoder: MTLRenderCommandEncoder) {
+        func enBuffer() -> Bool {
+            if buffer == nil {
+                buffer = buffers.allocate()
+            }
+            return buffer!.add(newVertices: points)
+        }
+        if !enBuffer() {
+            flush(encoder: encoder)
+            _ = enBuffer()
+        }
+    }
+
+    func flush(encoder: MTLRenderCommandEncoder) {
+        if let buffer {
+            encoder.setVertexBuffer(buffer.mtlBuffer, offset: 0, index: BufferIndex.vertex.rawValue)
+            encoder.drawPrimitives(type: primitiveType, vertexStart: 0, vertexCount: buffer.usedCount)
+            buffers.pend(buffer: buffer)
+            self.buffer = nil
+        }
     }
 }
