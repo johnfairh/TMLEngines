@@ -14,8 +14,8 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "tmlengines::Demo"
-               BuildableName = "Demo"
+               BlueprintIdentifier = "02EB2AFA289FD2FE00DA44BE"
+               BuildableName = "Demo.app"
                BlueprintName = "Demo"
                ReferencedContainer = "container:TMLEngines.xcodeproj">
             </BuildableReference>
@@ -109,8 +109,8 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "tmlengines::Demo"
-            BuildableName = "Demo"
+            BlueprintIdentifier = "02EB2AFA289FD2FE00DA44BE"
+            BuildableName = "Demo.app"
             BlueprintName = "Demo"
             ReferencedContainer = "container:TMLEngines.xcodeproj">
          </BuildableReference>

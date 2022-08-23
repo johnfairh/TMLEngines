@@ -189,40 +189,6 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
             .init(x: x0, y: y0, r: 1, g: 0, b: 0),
             .init(x: x1, y: y1, r: 1, g: 0, b: 0),
             .init(x: x2, y: y2, r: 1, g: 0, b: 0),
-        ], encoder: frameEncoder!)
-    }
-}
-
-final class RenderPrimitives {
-    let buffers: Buffers
-    private var buffer: Buffer?
-    let primitiveType: MTLPrimitiveType
-
-    init(buffers: Buffers, primitiveType: MTLPrimitiveType) {
-        self.buffers = buffers
-        self.buffer = nil
-        self.primitiveType = primitiveType
-    }
-
-    func render(points: [Vertex], encoder: MTLRenderCommandEncoder) {
-        func enBuffer() -> Bool {
-            if buffer == nil {
-                buffer = buffers.allocate()
-            }
-            return buffer!.add(newVertices: points)
-        }
-        if !enBuffer() {
-            flush(encoder: encoder)
-            _ = enBuffer()
-        }
-    }
-
-    func flush(encoder: MTLRenderCommandEncoder) {
-        if let buffer {
-            encoder.setVertexBuffer(buffer.mtlBuffer, offset: 0, index: BufferIndex.vertex.rawValue)
-            encoder.drawPrimitives(type: primitiveType, vertexStart: 0, vertexCount: buffer.usedCount)
-            buffers.pend(buffer: buffer)
-            self.buffer = nil
-        }
+          ], encoder: frameEncoder!)
     }
 }
