@@ -25,6 +25,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
     let clientFrame: Engine2DCall
 
     let buffers: Buffers
+    let points: RenderPrimitives
     let triangles: RenderPrimitives
 
     // MARK: Setup
@@ -46,6 +47,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
 
         self.buffers = Buffers(device: metalDevice)
         self.triangles = RenderPrimitives(buffers: buffers, primitiveType: .triangle)
+        self.points = RenderPrimitives(buffers: buffers, primitiveType: .point)
 
         super.init()
 
@@ -84,12 +86,14 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
     // MARK: Uniforms
 
     private(set) var viewportSize: SIMD2<Float> = .zero
+    private(set) var scaleFactor: Float = 0
 
     public func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
         if let window = view.window {
             let cgSize = window.convertFromBacking(NSRect(origin: .zero, size: size)).size
             viewportSize.x = Float(cgSize.width)
             viewportSize.y = Float(cgSize.height)
+            scaleFactor = Float(window.backingScaleFactor)
         }
     }
 
@@ -109,6 +113,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         // Flip vertical
         let vflip = matrix_float4x4(diagonal: .init(x: 1, y: -1, z: 1, w: 1))
         uniforms.projectionMatrix = vflip * translate * scale
+        uniforms.scaleFactor = scaleFactor
     }
 
     private func setUniforms(in encoder: MTLRenderCommandEncoder) {
@@ -166,6 +171,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         clientFrame(self)
         frameEncoder = nil
 
+        points.flush(encoder: encoder)
         triangles.flush(encoder: encoder)
         buffers.endFrame(frameID: frameID)
 
@@ -181,14 +187,19 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
 
     // MARK: Primitives
 
-    func drawTriangle(x0: Float, y0: Float, col0: Color,
-                      x1: Float, y1: Float, col1: Color,
-                      x2: Float, y2: Float, col2: Color) {
+    func drawPoint(x: Float, y: Float, color: Color) {
+        assert(frameEncoder != nil)
+        points.render(points: [.init(x: x, y: y, color: color)], encoder: frameEncoder!)
+    }
+
+    func drawTriangle(x0: Float, y0: Float, color0: Color,
+                      x1: Float, y1: Float, color1: Color,
+                      x2: Float, y2: Float, color2: Color) {
         assert(frameEncoder != nil)
         triangles.render(points: [
-            .init(x: x0, y: y0, color: col0),
-            .init(x: x1, y: y1, color: col1),
-            .init(x: x2, y: y2, color: col2),
+            .init(x: x0, y: y0, color: color0),
+            .init(x: x1, y: y1, color: color1),
+            .init(x: x2, y: y2, color: color2),
           ], encoder: frameEncoder!)
     }
 }

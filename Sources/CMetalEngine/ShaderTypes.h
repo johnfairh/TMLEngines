@@ -30,6 +30,7 @@ typedef NS_ENUM(NSInteger, VertexAttr) {
 
 typedef struct {
     matrix_float4x4 projectionMatrix;
+    float           scaleFactor;
 } Uniforms;
 
 #endif /* ShaderTypes_h */

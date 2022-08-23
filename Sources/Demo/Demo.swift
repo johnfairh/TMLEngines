@@ -43,8 +43,12 @@ class GameClient {
 
         let screen = engine.viewportSize
 
-        engine.drawTriangle(x0: screen.x / 2, y0: screen.y / 4, col0: .rgb(1, 0, 0),
-                            x1: screen.x * (3/4), y1: screen.y * (3/4), col1: .rgb(0, 1, 0),
-                            x2: screen.x / 4, y2: screen.y * (3/4), col2: .rgb(0, 0, 1))
+//        engine.drawTriangle(x0: screen.x / 2, y0: screen.y / 4, color0: .rgb(1, 0, 0),
+//                            x1: screen.x * (3/4), y1: screen.y * (3/4), color1: .rgb(0, 1, 0),
+//                            x2: screen.x / 4, y2: screen.y * (3/4), color2: .rgb(0, 0, 1))
+        engine.drawPoint(x: screen.x / 2, y: screen.y / 4, color: .rgb(1, 0, 0))
+//                            x1: screen.x * (3/4), y1: screen.y * (3/4), color1: .rgb(0, 1, 0),
+//                            x2: screen.x / 4, y2: screen.y * (3/4), color2: .rgb(0, 0, 1))
+
     }
 }

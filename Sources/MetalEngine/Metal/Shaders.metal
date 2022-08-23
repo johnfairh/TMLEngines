@@ -18,6 +18,7 @@ struct Vertex {
 struct ColoredVertex {
     float4 position [[position]];
     float4 color;
+    float  point_size [[point_size]];
 };
 
 vertex ColoredVertex vertex_2d(Vertex in [[stage_in]],
@@ -25,6 +26,7 @@ vertex ColoredVertex vertex_2d(Vertex in [[stage_in]],
     ColoredVertex vert;
     vert.position = uniforms.projectionMatrix * float4(in.position, 0, 1);
     vert.color = float4(in.color, 1);
+    vert.point_size = 1 * uniforms.scaleFactor;
     return vert;
 }
 

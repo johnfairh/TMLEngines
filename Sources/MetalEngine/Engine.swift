@@ -38,10 +38,13 @@ public protocol Engine2D {
     /// Milliseconds since the previous frame
     var frameDelta: TickCount { get }
 
-    /// Primitives
-    func drawTriangle(x0: Float, y0: Float, col0: Color,
-                      x1: Float, y1: Float, col1: Color,
-                      x2: Float, y2: Float, col2: Color)
+    /// Primitives - point
+    func drawPoint(x: Float, y: Float, color: Color)
+
+    /// Primitives - triangle
+    func drawTriangle(x0: Float, y0: Float, color0: Color,
+                      x1: Float, y1: Float, color1: Color,
+                      x2: Float, y2: Float, color2: Color)
 }
 
 typealias Engine2DCall = (Engine2D) -> Void
