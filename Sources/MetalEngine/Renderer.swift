@@ -5,8 +5,6 @@
 //  Licensed under MIT (https://github.com/johnfairh/TMLEngines/blob/main/LICENSE
 //
 
-// * Explore points
-// * Write starfield
 // * Lines
 // * Text
 // * Textures
@@ -113,6 +111,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         // Flip vertical
         let vflip = matrix_float4x4(diagonal: .init(x: 1, y: -1, z: 1, w: 1))
         uniforms.projectionMatrix = vflip * translate * scale
+        // How many render pixels to a point - for drawing points
         uniforms.scaleFactor = scaleFactor
     }
 
@@ -125,7 +124,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
 
     private(set) var clearColor = MTLClearColor(red: 0, green: 1, blue: 0, alpha: 0)
 
-    func setBackgroundColor(_ color: Color) {
+    func setBackgroundColor(_ color: Color2D) {
         clearColor = MTLClearColor(red: Double(color.r), green: Double(color.g), blue: Double(color.b), alpha: 1)
     }
 
@@ -187,14 +186,14 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
 
     // MARK: Primitives
 
-    func drawPoint(x: Float, y: Float, color: Color) {
+    func drawPoint(x: Float, y: Float, color: Color2D) {
         assert(frameEncoder != nil)
         points.render(points: [.init(x: x, y: y, color: color)], encoder: frameEncoder!)
     }
 
-    func drawTriangle(x0: Float, y0: Float, color0: Color,
-                      x1: Float, y1: Float, color1: Color,
-                      x2: Float, y2: Float, color2: Color) {
+    func drawTriangle(x0: Float, y0: Float, color0: Color2D,
+                      x1: Float, y1: Float, color1: Color2D,
+                      x2: Float, y2: Float, color2: Color2D) {
         assert(frameEncoder != nil)
         triangles.render(points: [
             .init(x: x0, y: y0, color: color0),

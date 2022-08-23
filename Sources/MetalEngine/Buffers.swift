@@ -15,7 +15,7 @@ struct Vertex {
     /// RGB 0-1 components
     let r, g, b: Float
 
-    init(x: Float, y: Float, color: Color) {
+    init(x: Float, y: Float, color: Color2D) {
         self.x = x
         self.y = y
         self.r = color.r
