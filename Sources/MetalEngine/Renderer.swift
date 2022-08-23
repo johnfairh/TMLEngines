@@ -5,8 +5,6 @@
 //  Licensed under MIT (https://github.com/johnfairh/TMLEngines/blob/main/LICENSE
 //
 
-// * Pull out prim-render, tidy bits and interfaces
-// * Figure out colour end-to-end, add back to demo, including background
 // * Explore points
 // * Write starfield
 // * Lines
@@ -122,8 +120,8 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
 
     private(set) var clearColor = MTLClearColor(red: 0, green: 1, blue: 0, alpha: 0)
 
-    func setBackgroundColor(r: Double, g: Double, b: Double, a: Double) {
-        clearColor = MTLClearColor(red: r, green: g, blue: b, alpha: a)
+    func setBackgroundColor(_ color: Color) {
+        clearColor = MTLClearColor(red: Double(color.r), green: Double(color.g), blue: Double(color.b), alpha: 1)
     }
 
     // MARK: Clock
@@ -183,12 +181,14 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
 
     // MARK: Primitives
 
-    func drawTriangle(x0: Float, y0: Float, x1: Float, y1: Float, x2: Float, y2: Float) {
+    func drawTriangle(x0: Float, y0: Float, col0: Color,
+                      x1: Float, y1: Float, col1: Color,
+                      x2: Float, y2: Float, col2: Color) {
         assert(frameEncoder != nil)
         triangles.render(points: [
-            .init(x: x0, y: y0, r: 1, g: 0, b: 0),
-            .init(x: x1, y: y1, r: 1, g: 0, b: 0),
-            .init(x: x2, y: y2, r: 1, g: 0, b: 0),
+            .init(x: x0, y: y0, color: col0),
+            .init(x: x1, y: y1, color: col1),
+            .init(x: x2, y: y2, color: col2),
           ], encoder: frameEncoder!)
     }
 }

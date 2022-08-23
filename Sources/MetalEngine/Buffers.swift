@@ -15,6 +15,14 @@ struct Vertex {
     /// RGB 0-1 components
     let r, g, b: Float
 
+    init(x: Float, y: Float, color: Color) {
+        self.x = x
+        self.y = y
+        self.r = color.r
+        self.g = color.g
+        self.b = color.b
+    }
+
     static func buildVertexDescriptor(bufferIndex: BufferIndex) -> MTLVertexDescriptor {
         let vertexDescriptor = MTLVertexDescriptor()
         vertexDescriptor.attributes[VertexAttr.position.rawValue].format = .float2
