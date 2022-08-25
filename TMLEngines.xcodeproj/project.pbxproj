@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		028F854228B76B24003FD1C1 /* RenderText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 028F854128B76B24003FD1C1 /* RenderText.swift */; };
 		02BFB48028A11B7300FD61EF /* MetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02BFB47F28A11B7300FD61EF /* MetalView.swift */; };
 		02BFB48228A4FF7700FD61EF /* Renderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02BFB48128A4FF7700FD61EF /* Renderer.swift */; };
 		02BFB48528A7B37F00FD61EF /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 02BFB48428A7B37F00FD61EF /* Shaders.metal */; };
@@ -53,6 +54,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		028F854128B76B24003FD1C1 /* RenderText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderText.swift; sourceTree = "<group>"; };
 		02BFB47F28A11B7300FD61EF /* MetalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalView.swift; sourceTree = "<group>"; };
 		02BFB48128A4FF7700FD61EF /* Renderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Renderer.swift; sourceTree = "<group>"; };
 		02BFB48428A7B37F00FD61EF /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
@@ -130,6 +132,7 @@
 				02BFB47F28A11B7300FD61EF /* MetalView.swift */,
 				02BFB48128A4FF7700FD61EF /* Renderer.swift */,
 				02BFB4A928B29E3100FD61EF /* Primitives.swift */,
+				028F854128B76B24003FD1C1 /* RenderText.swift */,
 				02BFB4A728B0E9D000FD61EF /* Buffers.swift */,
 				02BFB4A628AA668E00FD61EF /* ShaderTypes.h */,
 				02BFB48328A7B36800FD61EF /* Metal */,
@@ -302,6 +305,7 @@
 				02BFB4A828B0E9D000FD61EF /* Buffers.swift in Sources */,
 				02BFB4AA28B29E3100FD61EF /* Primitives.swift in Sources */,
 				02BFB48528A7B37F00FD61EF /* Shaders.metal in Sources */,
+				028F854228B76B24003FD1C1 /* RenderText.swift in Sources */,
 				02BFB48028A11B7300FD61EF /* MetalView.swift in Sources */,
 				02BFB48228A4FF7700FD61EF /* Renderer.swift in Sources */,
 				OBJ_35 /* Engine.swift in Sources */,

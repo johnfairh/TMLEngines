@@ -56,22 +56,22 @@ public protocol Engine2D {
     /// Text
 //    func createFont(name: String, height: Int, weight: Font2D.Weight) -> Font2D
 //
-//    func drawString(_ text: String, font: Font2D, rect: SIMD4<Float>, color: Color2D, valign: Font2D.Alignment.Vertical, align: Font2D.Alignment.Horizontal)
-//
+    func drawText(_ text: String, font: Font2D, rect: SIMD4<Float>, color: Color2D, valign: Font2D.Alignment.Vertical, align: Font2D.Alignment.Horizontal)
 }
 
 
 typealias Engine2DCall = (Engine2D) -> Void
 
 public struct Font2D: Hashable {
+    public init() {}
     public enum Weight {
         case medium
         case bold
     }
 
-    let name: String
-    let height: Int // Desired height in points (pixels)
-    let weight: Weight
+//    let name: String
+//    let height: Int // Desired height in points (pixels)
+//    let weight: Weight
 
     public enum Alignment {
         public enum Vertical: Hashable {

@@ -52,6 +52,8 @@ class GameClient {
         engine.drawTriangle(x0: screen.x / 2, y0: screen.y / 4, color0: .rgb(1, 0, 0),
                             x1: screen.x * (3/4), y1: screen.y * (3/4), color1: .rgb(0, 1, 0),
                             x2: screen.x / 4, y2: screen.y * (3/4), color2: .rgb(0, 0, 1))
+
+        engine.drawText("Hello World", font: Font2D(), rect: .init(x: screen.x / 2, y: screen.y / 4, z: 0, w: 0), color: .rgb(0,1,0), valign: .center, align: .center)
     }
 }
 

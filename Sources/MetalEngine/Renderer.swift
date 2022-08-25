@@ -26,6 +26,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
     let points: RenderPrimitives
     let lines: RenderPrimitives
     let triangles: RenderPrimitives
+    let text: RenderText
 
     // MARK: Setup
 
@@ -48,6 +49,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         self.triangles = RenderPrimitives(buffers: buffers, primitiveType: .triangle)
         self.points = RenderPrimitives(buffers: buffers, primitiveType: .point)
         self.lines = RenderPrimitives(buffers: buffers, primitiveType: .line)
+        self.text = RenderText(device: metalDevice)
 
         super.init()
 
@@ -94,6 +96,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
             viewportSize.x = Float(cgSize.width)
             viewportSize.y = Float(cgSize.height)
             scaleFactor = Float(window.backingScaleFactor)
+            text.setSize(cgSize) // or should this be the pixel size?
         }
     }
 
@@ -176,6 +179,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         lines.flush(encoder: encoder)
         triangles.flush(encoder: encoder)
         buffers.endFrame(frameID: frameID)
+        text.flush(encoder: encoder, rpd: rpd, commandQueue: metalCommandQueue)
 
         encoder.endEncoding()
         commandBuffer.present(view.currentDrawable!)
@@ -227,5 +231,10 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
     func flushTriangles() {
         assert(frameEncoder != nil)
         triangles.flush(encoder: frameEncoder!)
+    }
+
+    func drawText(_ text: String, font: Font2D, rect: SIMD4<Float>, color: Color2D, valign: Font2D.Alignment.Vertical, align: Font2D.Alignment.Horizontal) {
+        assert(frameEncoder != nil)
+        self.text.drawText(text, position: .init(x: rect.x, y: rect.y))
     }
 }
