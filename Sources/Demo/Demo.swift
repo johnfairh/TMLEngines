@@ -42,14 +42,16 @@ class GameClient {
     }
 
     func frame(engine: Engine2D) {
+        let screen = engine.viewportSize
 
         starField.render(engine: engine)
-        let screen = engine.viewportSize
+
+        engine.drawLine(x0: 0, y0: 0, color0: .rgb(0.1, 0, 0),
+                        x1: screen.x - 1, y1: screen.y - 1, color1: .rgb(0.9, 0, 0))
 
         engine.drawTriangle(x0: screen.x / 2, y0: screen.y / 4, color0: .rgb(1, 0, 0),
                             x1: screen.x * (3/4), y1: screen.y * (3/4), color1: .rgb(0, 1, 0),
                             x2: screen.x / 4, y2: screen.y * (3/4), color2: .rgb(0, 0, 1))
-
     }
 }
 
@@ -100,5 +102,6 @@ final class StarField {
             let newy = star.y - scoot // go up
             engine.drawPoint(x: star.x, y: newy < 0 ? newy + size.y : newy, color: star.color)
         }
+        engine.flushPoints()
     }
 }

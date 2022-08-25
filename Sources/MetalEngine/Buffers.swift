@@ -166,7 +166,7 @@ final class Buffers {
 
     /// Should be number of clients?  In general want to keep small and rely on dynamic allocating
     /// in the early frames?  Or have clients declare during some initial pass?
-    private static let INITIAL_BUFFERS = 2
+    private static let INITIAL_BUFFERS = 4
     /// This is the Apple triple-buffer thing, deal with GPU pipelining
     private static let BUFFER_CONCURRENCY = 3
 
@@ -196,7 +196,7 @@ final class Buffers {
 
     /// Client buffer allocation, during frame, fastpath
     func allocate() -> Buffer {
-        precondition(!free.isEmpty, "Out of buffers") // for now, spot leaks...
+        precondition(!free.isEmpty, "Out of buffers: \(self)") // for now, spot leaks...
         let buffer = free.removeLast()
         allocated.insert(buffer)
         buffer.setAllocated()

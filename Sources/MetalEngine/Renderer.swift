@@ -5,9 +5,9 @@
 //  Licensed under MIT (https://github.com/johnfairh/TMLEngines/blob/main/LICENSE
 //
 
-// * Lines
 // * Text
 // * Textures
+// ** BDrawTexturedRect
 // * ...
 // * Research triple-buffer thing (though I seem to have implemented it already!)
 
@@ -24,6 +24,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
 
     let buffers: Buffers
     let points: RenderPrimitives
+    let lines: RenderPrimitives
     let triangles: RenderPrimitives
 
     // MARK: Setup
@@ -46,6 +47,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         self.buffers = Buffers(device: metalDevice)
         self.triangles = RenderPrimitives(buffers: buffers, primitiveType: .triangle)
         self.points = RenderPrimitives(buffers: buffers, primitiveType: .point)
+        self.lines = RenderPrimitives(buffers: buffers, primitiveType: .line)
 
         super.init()
 
@@ -171,6 +173,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         frameEncoder = nil
 
         points.flush(encoder: encoder)
+        lines.flush(encoder: encoder)
         triangles.flush(encoder: encoder)
         buffers.endFrame(frameID: frameID)
 
@@ -191,6 +194,25 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         points.render(points: [.init(x: x, y: y, color: color)], encoder: frameEncoder!)
     }
 
+    func flushPoints() {
+        assert(frameEncoder != nil)
+        points.flush(encoder: frameEncoder!)
+    }
+
+    func drawLine(x0: Float, y0: Float, color0: Color2D,
+                  x1: Float, y1: Float, color1: Color2D) {
+        assert(frameEncoder != nil)
+        lines.render(points: [
+            .init(x: x0, y: y0, color: color0),
+            .init(x: x1, y: y1, color: color1),
+        ], encoder: frameEncoder!)
+    }
+
+    func flushLines() {
+        assert(frameEncoder != nil)
+        lines.flush(encoder: frameEncoder!)
+    }
+
     func drawTriangle(x0: Float, y0: Float, color0: Color2D,
                       x1: Float, y1: Float, color1: Color2D,
                       x2: Float, y2: Float, color2: Color2D) {
@@ -200,5 +222,10 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
             .init(x: x1, y: y1, color: color1),
             .init(x: x2, y: y2, color: color2),
           ], encoder: frameEncoder!)
+    }
+
+    func flushTriangles() {
+        assert(frameEncoder != nil)
+        triangles.flush(encoder: frameEncoder!)
     }
 }
