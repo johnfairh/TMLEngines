@@ -36,9 +36,13 @@ class GameClient {
     private init() {}
 
     let starField = StarField()
+    var monoFont: Font2D! = nil
+    var propFont: Font2D! = nil
 
     func setup(engine: Engine2D) {
         engine.setBackgroundColor(.rgb(0, 0, 0))
+        monoFont = engine.createFont(style: .monospaced, weight: .bold, height: 10)
+        propFont = engine.createFont(style: .proportional, weight: .medium, height: 30)
     }
 
     func frame(engine: Engine2D) {
@@ -53,7 +57,25 @@ class GameClient {
                             x1: screen.x * (3/4), y1: screen.y * (3/4), color1: .rgb(0, 1, 0),
                             x2: screen.x / 4, y2: screen.y * (3/4), color2: .rgb(0, 0, 1))
 
-        engine.drawText("Hello World", font: Font2D(), rect: .init(x: screen.x / 2, y: screen.y / 4, z: 0, w: 0), color: .rgb(0,1,0), valign: .center, align: .center)
+        engine.drawText("Hello World",
+                        font: monoFont,
+                        color: .rgb(0, 1, 0),
+                        x: screen.x / 4,
+                        y: screen.y / 8,
+                        width: screen.x / 2,
+                        height: screen.y / 8,
+                        align: .center,
+                        valign: .center)
+
+        engine.drawText("Slime molds taste like gelatine and bananas",
+                        font: propFont,
+                        color: .rgb(0, 1, 0),
+                        x: 0,
+                        y: Float((engine.frameTimestamp/50) % UInt(screen.y)),
+                        width: screen.x / 2,
+                        height: 20,
+                        align: .left,
+                        valign: .center)
     }
 }
 

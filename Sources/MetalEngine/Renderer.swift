@@ -5,7 +5,6 @@
 //  Licensed under MIT (https://github.com/johnfairh/TMLEngines/blob/main/LICENSE
 //
 
-// * Text
 // * Textures
 // ** BDrawTexturedRect
 // * ...
@@ -233,8 +232,11 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         triangles.flush(encoder: frameEncoder!)
     }
 
-    func drawText(_ text: String, font: Font2D, rect: SIMD4<Float>, color: Color2D, valign: Font2D.Alignment.Vertical, align: Font2D.Alignment.Horizontal) {
+    func drawText(_ text: String, font: Font2D, color: Color2D,
+                  x: Float, y: Float, width: Float, height: Float,
+                  align: Font2D.Alignment.Horizontal,
+                  valign: Font2D.Alignment.Vertical) {
         assert(frameEncoder != nil)
-        self.text.drawText(text, position: .init(x: rect.x, y: rect.y))
+        self.text.drawText(text, font: font, color: color, x: x, y: y, width: width, height: height, align: align, valign: valign)
     }
 }

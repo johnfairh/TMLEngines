@@ -53,25 +53,29 @@ public protocol Engine2D {
                       x2: Float, y2: Float, color2: Color2D)
     func flushTriangles()
 
-    /// Text
-//    func createFont(name: String, height: Int, weight: Font2D.Weight) -> Font2D
-//
-    func drawText(_ text: String, font: Font2D, rect: SIMD4<Float>, color: Color2D, valign: Font2D.Alignment.Vertical, align: Font2D.Alignment.Horizontal)
-}
+    /// Text - cache fonts at init
+    func createFont(style: Font2D.Style, weight: Font2D.Weight, height: Float) -> Font2D
 
+    /// An approximate version of the DirectX original, position parameters describe a rectangle the text goes inside,
+    /// aligned according to the align parameters.
+    func drawText(_ text: String, font: Font2D, color: Color2D,
+                  x: Float, y: Float, width: Float, height: Float,
+                  align: Font2D.Alignment.Horizontal,
+                  valign: Font2D.Alignment.Vertical)
+}
 
 typealias Engine2DCall = (Engine2D) -> Void
 
 public struct Font2D: Hashable {
-    public init() {}
+    public enum Style {
+        case proportional
+        case monospaced
+    }
+
     public enum Weight {
         case medium
         case bold
     }
-
-//    let name: String
-//    let height: Int // Desired height in points (pixels)
-//    let weight: Weight
 
     public enum Alignment {
         public enum Vertical: Hashable {
@@ -85,5 +89,26 @@ public struct Font2D: Hashable {
             case center
             case right
         }
+    }
+
+    let name: String
+    let height: Float
+}
+
+import AppKit
+
+extension Engine2D {
+    /// Cache font parameters ...
+    func createFont(style: Font2D.Style, weight: Font2D.Weight, height: Float) -> Font2D {
+        let font: NSFont
+        let fWeight: NSFont.Weight = weight == .medium ? .medium : .bold
+
+        switch style {
+        case .monospaced:
+            font = NSFont.monospacedSystemFont(ofSize: CGFloat(height), weight: fWeight)
+        case .proportional:
+            font = NSFont.systemFont(ofSize: CGFloat(height), weight: fWeight)
+        }
+        return Font2D(name: font.fontName, height: height)
     }
 }
