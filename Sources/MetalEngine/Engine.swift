@@ -52,7 +52,7 @@ public protocol Engine2D {
                   x1: Float, y1: Float, color1: Color2D)
     func flushLines()
 
-    /// Primitives - triangle
+    /// Primitives - filled triangle
     func drawTriangle(x0: Float, y0: Float, color0: Color2D,
                       x1: Float, y1: Float, color1: Color2D,
                       x2: Float, y2: Float, color2: Color2D)
@@ -67,6 +67,27 @@ public protocol Engine2D {
                   x: Float, y: Float, width: Float, height: Float,
                   align: Font2D.Alignment.Horizontal,
                   valign: Font2D.Alignment.Vertical)
+}
+
+/// Some helpers, just what looks needed right now
+public extension Engine2D {
+    /// Points in clockwise order
+    func drawQuad(x0: Float, y0: Float,
+                  x1: Float, y1: Float,
+                  x2: Float, y2: Float,
+                  x3: Float, y3: Float,
+                  color: Color2D) {
+        drawTriangle(x0: x0, y0: y0, color0: color,
+                     x1: x1, y1: y1, color1: color,
+                     x2: x3, y2: y3, color2: color)
+        drawTriangle(x0: x1, y0: y1, color0: color,
+                     x1: x3, y1: y3, color1: color,
+                     x2: x2, y2: y2, color2: color)
+    }
+
+    func flushQuads() {
+        flushTriangles()
+    }
 }
 
 typealias Engine2DCall = (Engine2D) -> Void

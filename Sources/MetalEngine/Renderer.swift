@@ -5,8 +5,6 @@
 //  Licensed under MIT (https://github.com/johnfairh/TMLEngines/blob/main/LICENSE
 //
 
-// * FilledQuad (will need transparency after all!) -- do as triangles
-// ** Shader rework to pass A through after all
 // * Textures
 // ** CreateTexture RGBA
 // ** UpdateTexture (for browser..)
@@ -92,8 +90,8 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
             colorAtt.pixelFormat = .bgra8Unorm
             colorAtt.isBlendingEnabled = true
             colorAtt.sourceRGBBlendFactor = .sourceAlpha
-            colorAtt.sourceAlphaBlendFactor = .sourceAlpha
             colorAtt.destinationRGBBlendFactor = .oneMinusSourceAlpha
+            colorAtt.sourceAlphaBlendFactor = .sourceAlpha
             colorAtt.destinationAlphaBlendFactor = .oneMinusSourceAlpha
 
             pipelineDescriptor.vertexDescriptor = vertexDescriptor
