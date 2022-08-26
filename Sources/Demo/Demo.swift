@@ -53,9 +53,9 @@ class GameClient {
         engine.drawLine(x0: 0, y0: 0, color0: .rgb(0.1, 0, 0),
                         x1: screen.x - 1, y1: screen.y - 1, color1: .rgb(0.9, 0, 0))
 
-        engine.drawTriangle(x0: screen.x / 2, y0: screen.y / 4, color0: .rgb(1, 0, 0),
-                            x1: screen.x * (3/4), y1: screen.y * (3/4), color1: .rgb(0, 1, 0),
-                            x2: screen.x / 4, y2: screen.y * (3/4), color2: .rgb(0, 0, 1))
+        engine.drawTriangle(x0: screen.x / 2, y0: screen.y / 4, color0: .rgba(1, 0, 0, 0.5),
+                            x1: screen.x * (3/4), y1: screen.y * (3/4), color1: .rgba(0, 1, 0, 0.8),
+                            x2: screen.x / 4, y2: screen.y * (3/4), color2: .rgba(0, 0, 1, 0.8))
 
         engine.drawText("Hello World",
                         font: monoFont,

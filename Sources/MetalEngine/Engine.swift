@@ -5,19 +5,24 @@
 //  Licensed under MIT (https://github.com/johnfairh/TMLEngines/blob/main/LICENSE
 //
 
-/// A color.  Transparency is for cowards.
+/// A color.
 public struct Color2D {
     /// 0-1
-    public let r, g, b: Float
+    public let r, g, b, a: Float
 
-    public init(r: Float, g: Float, b: Float) {
+    public init(r: Float, g: Float, b: Float, a: Float) {
         self.r = r
         self.g = g
         self.b = b
+        self.a = a
     }
 
     public static func rgb(_ r: Float, _ g: Float, _ b: Float) -> Color2D {
-        Color2D(r: r, g: g, b: b)
+        Color2D(r: r, g: g, b: b, a: 1)
+    }
+
+    public static func rgba(_ r: Float, _ g: Float, _ b: Float, _ a: Float) -> Color2D {
+        Color2D(r: r, g: g, b: b, a: a)
     }
 }
 

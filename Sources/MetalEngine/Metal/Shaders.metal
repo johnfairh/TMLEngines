@@ -12,7 +12,7 @@ using namespace metal;
 
 struct Vertex {
     float2 position [[attribute(VertexAttrPosition)]];
-    float3 color    [[attribute(VertexAttrColor)]];
+    float4 color    [[attribute(VertexAttrColor)]];
 };
 
 struct ColoredVertex {
@@ -25,7 +25,7 @@ vertex ColoredVertex vertex_2d(Vertex in [[stage_in]],
                                constant Uniforms & uniforms [[buffer(BufferIndexUniform)]]) {
     ColoredVertex vert;
     vert.position = uniforms.projectionMatrix * float4(in.position, 0, 1);
-    vert.color = float4(in.color, 1);
+    vert.color = in.color;
     vert.point_size = 1 * uniforms.scaleFactor;
     return vert;
 }

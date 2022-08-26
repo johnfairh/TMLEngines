@@ -12,8 +12,8 @@ import CMetalEngine
 struct Vertex {
     /// 2D coordinates, origin top-left
     let x, y: Float
-    /// RGB 0-1 components
-    let r, g, b: Float
+    /// RGBA 0-1 components
+    let r, g, b, a: Float
 
     init(x: Float, y: Float, color: Color2D) {
         self.x = x
@@ -21,6 +21,7 @@ struct Vertex {
         self.r = color.r
         self.g = color.g
         self.b = color.b
+        self.a = color.a
     }
 
     static func buildVertexDescriptor(bufferIndex: BufferIndex) -> MTLVertexDescriptor {
@@ -28,7 +29,7 @@ struct Vertex {
         vertexDescriptor.attributes[VertexAttr.position.rawValue].format = .float2
         vertexDescriptor.attributes[VertexAttr.position.rawValue].offset = 0
         vertexDescriptor.attributes[VertexAttr.position.rawValue].bufferIndex = bufferIndex.rawValue
-        vertexDescriptor.attributes[VertexAttr.color.rawValue].format = .float3
+        vertexDescriptor.attributes[VertexAttr.color.rawValue].format = .float4
         vertexDescriptor.attributes[VertexAttr.color.rawValue].offset = MemoryLayout<Vertex>.offset(of: \.r)!
         vertexDescriptor.attributes[VertexAttr.color.rawValue].bufferIndex = bufferIndex.rawValue
         vertexDescriptor.layouts[0].stride = MemoryLayout<Vertex>.stride
@@ -192,6 +193,9 @@ final class Buffers {
     func startFrame() {
         assert(framePending.isEmpty)
         assert(allocated.isEmpty)
+        /// We shouldn't have more than three frames in flight (likely to run out of buffers) because
+        /// the higher-level RPD/drawable should have been unavailable and the frame abandoned...
+        assert(allPending.count < 3)
     }
 
     /// Client buffer allocation, during frame, fastpath

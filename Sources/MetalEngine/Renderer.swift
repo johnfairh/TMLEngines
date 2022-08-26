@@ -5,10 +5,21 @@
 //  Licensed under MIT (https://github.com/johnfairh/TMLEngines/blob/main/LICENSE
 //
 
+// * FilledQuad (will need transparency after all!) -- do as triangles
+// ** Shader rework to pass A through after all
 // * Textures
-// ** BDrawTexturedRect
-// * ...
-// * Research triple-buffer thing (though I seem to have implemented it already!)
+// ** CreateTexture RGBA
+// ** UpdateTexture (for browser..)
+// ** DrawTexturedRect
+// *** Understand pipeline implications
+// *** Restructure for encoder reuse issues
+// *** Rename shaders
+// *** New shader/buffer/pipeline design for textures
+// * Keyboard & mouse input
+//
+// Extra stuff..
+// * voice
+// * 
 
 import MetalKit
 
@@ -76,8 +87,19 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
             pipelineDescriptor.label = label
             pipelineDescriptor.vertexFunction = library.makeFunction(name: vertex)!
             pipelineDescriptor.fragmentFunction = library.makeFunction(name: fragment)!
-            pipelineDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
+
+            let colorAtt = pipelineDescriptor.colorAttachments[0]!
+            colorAtt.pixelFormat = .bgra8Unorm
+            colorAtt.isBlendingEnabled = true
+            colorAtt.sourceRGBBlendFactor = .sourceAlpha
+            colorAtt.sourceAlphaBlendFactor = .sourceAlpha
+            colorAtt.destinationRGBBlendFactor = .oneMinusSourceAlpha
+            colorAtt.destinationAlphaBlendFactor = .oneMinusSourceAlpha
+
             pipelineDescriptor.vertexDescriptor = vertexDescriptor
+            pipelineDescriptor.vertexBuffers[BufferIndex.vertex.rawValue].mutability = .immutable
+            pipelineDescriptor.vertexBuffers[BufferIndex.uniform.rawValue].mutability = .immutable
+            pipelineDescriptor.fragmentBuffers[BufferIndex.uniform.rawValue].mutability = .immutable
             return try! device.makeRenderPipelineState(descriptor: pipelineDescriptor)
         }
 
@@ -95,7 +117,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
             viewportSize.x = Float(cgSize.width)
             viewportSize.y = Float(cgSize.height)
             scaleFactor = Float(window.backingScaleFactor)
-            text.setSize(cgSize) // or should this be the pixel size?
+            text.setSize(cgSize)
         }
     }
 
