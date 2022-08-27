@@ -33,6 +33,11 @@ let package = Package(
       .executableTarget(
         name: "Demo",
         dependencies: ["MetalEngine"],
-        exclude: ["Assets.xcassets", "Demo.entitlements"])
+        exclude: ["Assets.xcassets", "Demo.entitlements"],
+        resources: [
+          .process("Resources/avatar_rgba"),
+          .process("Resources/avatar_bgra")
+        ]
+      )
     ]
 )

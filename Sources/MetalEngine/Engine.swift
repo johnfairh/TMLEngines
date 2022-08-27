@@ -67,6 +67,19 @@ public protocol Engine2D {
                   x: Float, y: Float, width: Float, height: Float,
                   align: Font2D.Alignment.Horizontal,
                   valign: Font2D.Alignment.Vertical)
+
+    /// Create a textures
+    func createTexture(bytes: UnsafeRawPointer, width: Int, height: Int, format: Texture2D.Format) -> Texture2D
+
+    /// Update a texture - must be the same size and pixel format as at create time
+    func updateTexture(_ texture: Texture2D, bytes: UnsafeRawPointer)
+}
+
+public struct Texture2D {
+    public enum Format {
+        case rgba
+        case bgra
+    }
 }
 
 /// Some helpers, just what looks needed right now

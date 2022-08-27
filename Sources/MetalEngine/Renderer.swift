@@ -259,4 +259,12 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         assert(frameEncoder != nil)
         self.text.drawText(text, font: font, color: color, x: x, y: y, width: width, height: height, align: align, valign: valign)
     }
+
+    func createTexture(bytes: UnsafeRawPointer, width: Int, height: Int, format: Texture2D.Format) -> Texture2D {
+        Texture2D()
+    }
+
+    /// Update a texture - must be the same size and pixel format as at create time
+    func updateTexture(_ texture: Texture2D, bytes: UnsafeRawPointer) {
+    }
 }
