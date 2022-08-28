@@ -38,11 +38,25 @@ class GameClient {
     let starField = StarField()
     var monoFont: Font2D! = nil
     var propFont: Font2D! = nil
+    var texture1: Texture2D! = nil
 
     func setup(engine: Engine2D) {
         engine.setBackgroundColor(.rgb(0, 0, 0))
         monoFont = engine.createFont(style: .monospaced, weight: .bold, height: 10)
         propFont = engine.createFont(style: .proportional, weight: .medium, height: 30)
+
+        #if SWIFT_PACKAGE
+        let bundle = Bundle.module
+        #else
+        let bundle = Bundle.main
+        #endif
+        guard let t1URL = bundle.url(forResource: "Resources/avatar_bgra", withExtension: nil) else {
+            preconditionFailure("Bundle load fail")
+        }
+        let data = try! Data(contentsOf: t1URL)
+        texture1 = data.withUnsafeBytes { ubp in
+            engine.createTexture(bytes: ubp.baseAddress!, width: 64, height: 64, format: .bgra)
+        }
     }
 
     func frame(engine: Engine2D) {

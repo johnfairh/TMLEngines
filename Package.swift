@@ -35,8 +35,7 @@ let package = Package(
         dependencies: ["MetalEngine"],
         exclude: ["Assets.xcassets", "Demo.entitlements"],
         resources: [
-          .process("Resources/avatar_rgba"),
-          .process("Resources/avatar_bgra")
+          .copy("Resources")
         ]
       )
     ]

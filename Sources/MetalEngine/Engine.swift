@@ -76,11 +76,25 @@ public protocol Engine2D {
 }
 
 public struct Texture2D {
+    let uuid: UUID
+    let width: Int
+    let height: Int
+    let format: Format
+
     public enum Format {
         case rgba
         case bgra
     }
+
+    init(width: Int, height: Int, format: Format) {
+        self.uuid = UUID()
+        self.width = width
+        self.height = height
+        self.format = format
+    }
 }
+
+extension Texture2D: Hashable {}
 
 /// Some helpers, just what looks needed right now
 public extension Engine2D {

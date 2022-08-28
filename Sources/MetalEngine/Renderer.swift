@@ -31,6 +31,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
     let clientFrame: Engine2DCall
 
     let buffers: Buffers
+    let textures: Textures
     let points: RenderPrimitives
     let lines: RenderPrimitives
     let triangles: RenderPrimitives
@@ -54,6 +55,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         self.metalCommandQueue = commandQueue
 
         self.buffers = Buffers(device: metalDevice)
+        self.textures = Textures(device: metalDevice)
         self.triangles = RenderPrimitives(buffers: buffers, primitiveType: .triangle)
         self.points = RenderPrimitives(buffers: buffers, primitiveType: .point)
         self.lines = RenderPrimitives(buffers: buffers, primitiveType: .line)
@@ -181,6 +183,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         updateUniforms()
         updateTickCount()
         buffers.startFrame()
+        textures.startFrame()
 
         rpd.colorAttachments[0].clearColor = clearColor
         guard let encoder = commandBuffer.makeRenderCommandEncoder(descriptor: rpd) else {
@@ -198,6 +201,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         lines.flush(encoder: encoder)
         triangles.flush(encoder: encoder)
         buffers.endFrame(frameID: frameID)
+        textures.endFrame(frameID: frameID)
         text.flush(encoder: encoder, rpd: rpd, commandQueue: metalCommandQueue)
 
         encoder.endEncoding()
@@ -261,10 +265,11 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
     }
 
     func createTexture(bytes: UnsafeRawPointer, width: Int, height: Int, format: Texture2D.Format) -> Texture2D {
-        Texture2D()
+        textures.create(bytes: bytes, width: width, height: height, format: format)
     }
 
     /// Update a texture - must be the same size and pixel format as at create time
     func updateTexture(_ texture: Texture2D, bytes: UnsafeRawPointer) {
+        textures.update(texture: texture, bytes: bytes)
     }
 }
