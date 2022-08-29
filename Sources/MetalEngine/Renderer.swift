@@ -13,6 +13,7 @@
 // *** Restructure for encoder reuse issues
 // *** Rename shaders
 // *** New shader/buffer/pipeline design for textures
+// * What threading guarantees of frame-complete ?
 // * Keyboard & mouse input
 //
 // Extra stuff..

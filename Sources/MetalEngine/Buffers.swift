@@ -45,24 +45,12 @@ struct Vertex {
 /// A managed vertex buffer
 final class Buffer {
     /// I have no idea how big is reasonable, probably too small for real systems
-    private static let BUFFER_BYTES = 8192
-    /// 200 vertices per 4K page
-    private static let VERTEX_PER_BUFFER = BUFFER_BYTES / MemoryLayout<Vertex>.stride
+    fileprivate static let BUFFER_BYTES = 8192
 
     /// Metal buffer object
     let mtlBuffer: MTLBuffer
-    /// Permanent typed pointer to the start of the buffer
-    private let firstVertex: UnsafeMutablePointer<Vertex>
 
-    /// Cursor into buffer, insertion point
-    private var nextVertex: UnsafeMutablePointer<Vertex>
-    /// Number of vertices currently used
-    private(set) var usedCount: Int
-    /// Number of vertices currently free
-    private var freeCount: Int {
-        Buffer.VERTEX_PER_BUFFER - usedCount
-    }
-
+    /// Lifetime state of buffer
     enum State {
         /// Buffer is unused
         case free
@@ -80,9 +68,6 @@ final class Buffer {
         }
         self.mtlBuffer = mtlBuffer
         mtlBuffer.label = "Vertex buffer \(id)"
-        firstVertex = mtlBuffer.contents().bindMemory(to: Vertex.self, capacity: Buffer.VERTEX_PER_BUFFER)
-        nextVertex = firstVertex
-        usedCount = 0
         state = .free
     }
 
@@ -102,33 +87,6 @@ final class Buffer {
     fileprivate func setFree() {
         assert(state == .pending)
         state = .free
-        nextVertex = firstVertex
-        usedCount = 0
-    }
-
-    /// Client request to add vertices
-    func add(newVertices: [Vertex]) -> Bool {
-        guard newVertices.count < freeCount else {
-            return false
-        }
-        // Swift's job to turn this into memcpy()...
-        newVertices.withUnsafeBufferPointer {
-            nextVertex.assign(from: $0.baseAddress!, count: $0.count)
-        }
-        nextVertex += newVertices.count
-        usedCount += newVertices.count
-        return true
-    }
-
-    /// Client request to add one vertex
-    func add(newVertex: Vertex) -> Bool {
-        guard freeCount > 0 else {
-            return false
-        }
-        nextVertex[0] = newVertex
-        nextVertex += 1
-        usedCount += 1
-        return true
     }
 }
 
@@ -142,8 +100,49 @@ extension Buffer: Hashable, CustomStringConvertible {
     }
 
     var description: String {
-        "\(mtlBuffer.label!) [\(state) used=\(usedCount)/\(Buffer.VERTEX_PER_BUFFER)]"
+        "\(mtlBuffer.label!) [\(state)]"
     }
+}
+
+// MARK: BufferWriter
+
+struct BufferWriter<VertexType> {
+    private(set) var buffer: Buffer?
+
+    private var nextVertex: UnsafeMutablePointer<VertexType>!
+    let totalCount: Int
+    private(set) var usedCount: Int
+
+    init(vertexType: VertexType.Type) {
+        self.buffer = nil
+        self.nextVertex = nil
+        self.totalCount = Buffer.BUFFER_BYTES / MemoryLayout<VertexType>.stride
+        self.usedCount = 0
+    }
+
+    /// Update the managed buffer
+    mutating func setBuffer(_ buffer: Buffer?) {
+        self.buffer = buffer
+        self.usedCount = 0
+        if let buffer {
+            self.nextVertex = buffer.mtlBuffer.contents().bindMemory(to: VertexType.self, capacity: totalCount)
+        }
+    }
+
+    /// Add vertices (or whatever) to the buffer
+    mutating func add(vertices: [VertexType]) -> Bool {
+        guard usedCount + vertices.count <= totalCount else {
+            return false
+        }
+        // Swift's job to turn this into memcpy()...
+        vertices.withUnsafeBufferPointer {
+            nextVertex.assign(from: $0.baseAddress!, count: $0.count)
+        }
+        nextVertex += vertices.count
+        usedCount += vertices.count
+        return true
+    }
+
 }
 
 // MARK: Buffer Manager

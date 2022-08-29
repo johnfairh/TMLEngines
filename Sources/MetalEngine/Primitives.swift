@@ -11,22 +11,22 @@ import CMetalEngine
 /// Batch client calls of some primitive type into a single draw call
 final class RenderPrimitives {
     let buffers: Buffers
-    private var buffer: Buffer?
     let primitiveType: MTLPrimitiveType
+    private var bufferWriter: BufferWriter<Vertex>
 
     init(buffers: Buffers, primitiveType: MTLPrimitiveType) {
         self.buffers = buffers
-        self.buffer = nil
         self.primitiveType = primitiveType
+        self.bufferWriter = BufferWriter(vertexType: Vertex.self)
     }
 
     /// Client call
     func render(points: [Vertex], encoder: MTLRenderCommandEncoder) {
         func enBuffer() -> Bool {
-            if buffer == nil {
-                buffer = buffers.allocate()
+            if bufferWriter.buffer == nil {
+                bufferWriter.setBuffer(buffers.allocate())
             }
-            return buffer!.add(newVertices: points)
+            return bufferWriter.add(vertices: points)
         }
         if !enBuffer() {
             flush(encoder: encoder)
@@ -38,11 +38,11 @@ final class RenderPrimitives {
 
     /// Renderer calls at end of frame
     func flush(encoder: MTLRenderCommandEncoder) {
-        if let buffer {
+        if let buffer = bufferWriter.buffer {
             encoder.setVertexBuffer(buffer.mtlBuffer, offset: 0, index: BufferIndex.vertex.rawValue)
-            encoder.drawPrimitives(type: primitiveType, vertexStart: 0, vertexCount: buffer.usedCount)
+            encoder.drawPrimitives(type: primitiveType, vertexStart: 0, vertexCount: bufferWriter.usedCount)
             buffers.pend(buffer: buffer)
-            self.buffer = nil
+            bufferWriter.setBuffer(nil)
         }
     }
 }
