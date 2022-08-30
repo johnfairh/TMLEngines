@@ -8,35 +8,6 @@
 import MetalKit
 import CMetalEngine
 
-/// Vertex data as stored in the buffer - don't use any clever types so that everything packs correctly
-struct Vertex {
-    /// 2D coordinates, origin top-left
-    let x, y: Float
-    /// RGBA 0-1 components
-    let r, g, b, a: Float
-
-    init(x: Float, y: Float, color: Color2D) {
-        self.x = x
-        self.y = y
-        self.r = color.r
-        self.g = color.g
-        self.b = color.b
-        self.a = color.a
-    }
-
-    static func buildVertexDescriptor(bufferIndex: BufferIndex) -> MTLVertexDescriptor {
-        let vertexDescriptor = MTLVertexDescriptor()
-        vertexDescriptor.attributes[VertexAttr.position.rawValue].format = .float2
-        vertexDescriptor.attributes[VertexAttr.position.rawValue].offset = 0
-        vertexDescriptor.attributes[VertexAttr.position.rawValue].bufferIndex = bufferIndex.rawValue
-        vertexDescriptor.attributes[VertexAttr.color.rawValue].format = .float4
-        vertexDescriptor.attributes[VertexAttr.color.rawValue].offset = MemoryLayout<Vertex>.offset(of: \.r)!
-        vertexDescriptor.attributes[VertexAttr.color.rawValue].bufferIndex = bufferIndex.rawValue
-        vertexDescriptor.layouts[0].stride = MemoryLayout<Vertex>.stride
-        return vertexDescriptor
-    }
-}
-
 // MARK: Buffer
 
 // All this stuff is single-threaded right now because I dunno where the concurrency
@@ -102,47 +73,6 @@ extension Buffer: Hashable, CustomStringConvertible {
     var description: String {
         "\(mtlBuffer.label!) [\(state)]"
     }
-}
-
-// MARK: BufferWriter
-
-struct BufferWriter<VertexType> {
-    private(set) var buffer: Buffer?
-
-    private var nextVertex: UnsafeMutablePointer<VertexType>!
-    let totalCount: Int
-    private(set) var usedCount: Int
-
-    init(vertexType: VertexType.Type) {
-        self.buffer = nil
-        self.nextVertex = nil
-        self.totalCount = Buffer.BUFFER_BYTES / MemoryLayout<VertexType>.stride
-        self.usedCount = 0
-    }
-
-    /// Update the managed buffer
-    mutating func setBuffer(_ buffer: Buffer?) {
-        self.buffer = buffer
-        self.usedCount = 0
-        if let buffer {
-            self.nextVertex = buffer.mtlBuffer.contents().bindMemory(to: VertexType.self, capacity: totalCount)
-        }
-    }
-
-    /// Add vertices (or whatever) to the buffer
-    mutating func add(vertices: [VertexType]) -> Bool {
-        guard usedCount + vertices.count <= totalCount else {
-            return false
-        }
-        // Swift's job to turn this into memcpy()...
-        vertices.withUnsafeBufferPointer {
-            nextVertex.assign(from: $0.baseAddress!, count: $0.count)
-        }
-        nextVertex += vertices.count
-        usedCount += vertices.count
-        return true
-    }
-
 }
 
 // MARK: Buffer Manager
@@ -246,5 +176,74 @@ extension Buffers: CustomStringConvertible {
         "Buffers: \(all.count) total, \(free.count) free, \(allocated.count) allocated, \(framePending.count) framePending, \(allPendingCount) allPending\n" +
           "  AllPending: [\(allPendingDescription)]\n" +
         all.map { "  \($0.description)" }.joined(separator: "\n")
+    }
+}
+
+// MARK: BufferWriter
+
+/// Client component to manage putting some kind of vertex data into a succession of
+/// buffers and sending them to the device when full
+struct BufferWriter<VertexType> {
+    /// Buffer manager
+    private let buffers: Buffers
+    /// The currently open buffer, or `nil` if none
+    private(set) var buffer: Buffer?
+
+    /// Cursor pointer, next place to write
+    private var nextVertex: UnsafeMutablePointer<VertexType>!
+    /// Max capacity of buffer given ``VertexType``
+    let totalCount: Int
+    /// Currently used count, <= ``totalCount``
+    private(set) var usedCount: Int
+
+    /// Create at startup for a particular type
+    init(buffers: Buffers, vertexType: VertexType.Type) {
+        self.buffers = buffers
+        self.buffer = nil
+        self.nextVertex = nil
+        self.totalCount = Buffer.BUFFER_BYTES / MemoryLayout<VertexType>.stride
+        self.usedCount = 0
+    }
+
+    /// Update the buffer, called isiden ``add(vertices:)``
+    private mutating func setBuffer(_ buffer: Buffer) {
+        self.buffer = buffer
+        self.nextVertex = buffer.mtlBuffer.contents().bindMemory(to: VertexType.self, capacity: totalCount)
+        self.usedCount = 0
+    }
+
+    /// Callback if there is a buffer to finish, set it pending in ``Buffers`` and forget it
+    mutating func pend(with: (Buffer, Int) -> Void) {
+        if let buffer {
+            with(buffer, usedCount)
+            buffers.pend(buffer: buffer)
+            self.buffer = nil
+        }
+    }
+
+    /// Add vertices (or whatever) to the buffer
+    mutating func add(vertices: [VertexType]) -> Bool {
+        if buffer == nil {
+            setBuffer(buffers.allocate())
+        }
+        guard usedCount + vertices.count <= totalCount else {
+            return false
+        }
+        // Swift's job to turn this into memcpy()...
+        vertices.withUnsafeBufferPointer {
+            nextVertex.assign(from: $0.baseAddress!, count: $0.count)
+        }
+        nextVertex += vertices.count
+        usedCount += vertices.count
+        return true
+    }
+}
+
+extension BufferWriter: CustomStringConvertible {
+    var description: String {
+        guard let buffer else {
+            return "(no buffer))"
+        }
+        return "\(buffer) used \(usedCount)/\(totalCount)"
     }
 }
