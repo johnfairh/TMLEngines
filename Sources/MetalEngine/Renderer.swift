@@ -26,7 +26,7 @@ import CMetalEngine
 
 class Renderer: NSObject, Engine2D, MTKViewDelegate {
     let metalCommandQueue: MTLCommandQueue
-    private(set) var twoDPipeline: MTLRenderPipelineState! = nil
+    private(set) var flatPipeline: MTLRenderPipelineState! = nil
 
     let clientSetup: Engine2DCall
     let clientFrame: Engine2DCall
@@ -81,7 +81,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
             preconditionFailure("Can't load metal shader library")
         }
 
-        let vertexDescriptor = Vertex.buildVertexDescriptor(bufferIndex: .vertex)
+        let vertexDescriptor = FlatVertex.buildVertexDescriptor(bufferIndex: .vertex)
 
         func makePipeline(_ label: String, _ vertex: String, _ fragment: String) -> MTLRenderPipelineState {
             let pipelineDescriptor = MTLRenderPipelineDescriptor()
@@ -104,7 +104,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
             return try! device.makeRenderPipelineState(descriptor: pipelineDescriptor)
         }
 
-        twoDPipeline = makePipeline("TwoD", "vertex_2d", "fragment_passthrough")
+        flatPipeline = makePipeline("Flat", "vertex_flat", "fragment_passthrough")
     }
 
     // MARK: Uniforms
@@ -169,11 +169,58 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         frameTimestamp = TickCount(CACurrentMediaTime() * 1000)
     }
 
-    // MARK: Frame
+    // MARK: Frame counter
 
     typealias FrameID = UInt64
     private(set) var frameID = FrameID(1000)
-    private var frameEncoder: MTLRenderCommandEncoder?
+
+    // MARK: Frame, pipeline selection
+
+    enum Pipeline {
+        case none
+        case flat
+        case textured
+    }
+    private(set) var currentPipeline = Pipeline.none
+    private(set) var frameEncoder: MTLRenderCommandEncoder?
+
+    func select(pipeline: Pipeline) {
+        assert(frameEncoder != nil)
+        guard pipeline != currentPipeline else {
+            return
+        }
+
+        switch currentPipeline {
+        case .flat:
+            points.flush(encoder: frameEncoder!)
+            lines.flush(encoder: frameEncoder!)
+            triangles.flush(encoder: frameEncoder!)
+
+        case .textured:
+            preconditionFailure()
+
+        case .none:
+            break
+        }
+
+        switch pipeline {
+        case .flat:
+            frameEncoder!.setRenderPipelineState(flatPipeline)
+
+        case .textured:
+            preconditionFailure()
+
+        case .none:
+            break
+        }
+        currentPipeline = pipeline
+    }
+
+    func flushCurrentPipeline() {
+        select(pipeline: .none)
+    }
+
+    // MARK: Frame, entrypoint
 
     public func draw(in view: MTKView) {
         guard let rpd = view.currentRenderPassDescriptor,
@@ -191,16 +238,13 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
             print("No resources to generate frame #2")
             return
         }
-        encoder.setRenderPipelineState(twoDPipeline)
         setUniforms(in: encoder)
 
         frameEncoder = encoder
         clientFrame(self)
+        flushCurrentPipeline()
         frameEncoder = nil
 
-        points.flush(encoder: encoder)
-        lines.flush(encoder: encoder)
-        triangles.flush(encoder: encoder)
         buffers.endFrame(frameID: frameID)
         textures.endFrame(frameID: frameID)
         text.flush(encoder: encoder, rpd: rpd, commandQueue: metalCommandQueue)
@@ -219,6 +263,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
 
     func drawPoint(x: Float, y: Float, color: Color2D) {
         assert(frameEncoder != nil)
+        select(pipeline: .flat)
         points.render(points: [.init(x: x, y: y, color: color)], encoder: frameEncoder!)
     }
 
@@ -230,6 +275,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
     func drawLine(x0: Float, y0: Float, color0: Color2D,
                   x1: Float, y1: Float, color1: Color2D) {
         assert(frameEncoder != nil)
+        select(pipeline: .flat)
         lines.render(points: [
             .init(x: x0, y: y0, color: color0),
             .init(x: x1, y: y1, color: color1),
@@ -245,6 +291,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
                       x1: Float, y1: Float, color1: Color2D,
                       x2: Float, y2: Float, color2: Color2D) {
         assert(frameEncoder != nil)
+        select(pipeline: .flat)
         triangles.render(points: [
             .init(x: x0, y: y0, color: color0),
             .init(x: x1, y: y1, color: color1),

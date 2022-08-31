@@ -9,7 +9,7 @@ import MetalKit
 import CMetalEngine
 
 /// Vertex data as stored in the buffer - don't use any clever types so that everything packs correctly
-struct Vertex {
+struct FlatVertex {
     /// 2D coordinates, origin top-left
     let x, y: Float
     /// RGBA 0-1 components
@@ -30,9 +30,9 @@ struct Vertex {
         vertexDescriptor.attributes[VertexAttr.position.rawValue].offset = 0
         vertexDescriptor.attributes[VertexAttr.position.rawValue].bufferIndex = bufferIndex.rawValue
         vertexDescriptor.attributes[VertexAttr.color.rawValue].format = .float4
-        vertexDescriptor.attributes[VertexAttr.color.rawValue].offset = MemoryLayout<Vertex>.offset(of: \.r)!
+        vertexDescriptor.attributes[VertexAttr.color.rawValue].offset = MemoryLayout<FlatVertex>.offset(of: \.r)!
         vertexDescriptor.attributes[VertexAttr.color.rawValue].bufferIndex = bufferIndex.rawValue
-        vertexDescriptor.layouts[0].stride = MemoryLayout<Vertex>.stride
+        vertexDescriptor.layouts[0].stride = MemoryLayout<FlatVertex>.stride
         return vertexDescriptor
     }
 }
@@ -40,15 +40,15 @@ struct Vertex {
 /// Batch client calls of some primitive type into a single draw call
 final class RenderPrimitives {
     let primitiveType: MTLPrimitiveType
-    private var bufferWriter: BufferWriter<Vertex>
+    private var bufferWriter: BufferWriter<FlatVertex>
 
     init(buffers: Buffers, primitiveType: MTLPrimitiveType) {
         self.primitiveType = primitiveType
-        self.bufferWriter = BufferWriter(buffers: buffers, vertexType: Vertex.self)
+        self.bufferWriter = BufferWriter(buffers: buffers, vertexType: FlatVertex.self)
     }
 
     /// Client call
-    func render(points: [Vertex], encoder: MTLRenderCommandEncoder) {
+    func render(points: [FlatVertex], encoder: MTLRenderCommandEncoder) {
         if !bufferWriter.add(vertices: points) {
             flush(encoder: encoder)
             if !bufferWriter.add(vertices: points) {

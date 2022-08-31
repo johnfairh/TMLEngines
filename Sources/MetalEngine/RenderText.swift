@@ -83,7 +83,8 @@ final class RenderText {
     func flush(encoder: MTLRenderCommandEncoder, rpd: MTLRenderPassDescriptor, commandQueue: MTLCommandQueue) {
         renderer.render(withViewport: CGRect(origin: .zero, size: scene.size),
                         renderCommandEncoder: encoder,
-                        renderPassDescriptor: rpd, commandQueue: commandQueue)
+                        renderPassDescriptor: rpd,
+                        commandQueue: commandQueue)
         scene.removeAllChildren()
     }
 }

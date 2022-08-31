@@ -10,7 +10,7 @@ using namespace metal;
 
 #include "ShaderTypes.h"
 
-struct Vertex {
+struct FlatVertex {
     float2 position [[attribute(VertexAttrPosition)]];
     float4 color    [[attribute(VertexAttrColor)]];
 };
@@ -21,8 +21,8 @@ struct ColoredVertex {
     float  point_size [[point_size]];
 };
 
-vertex ColoredVertex vertex_2d(Vertex in [[stage_in]],
-                               constant Uniforms & uniforms [[buffer(BufferIndexUniform)]]) {
+vertex ColoredVertex vertex_flat(FlatVertex in [[stage_in]],
+                                 constant Uniforms & uniforms [[buffer(BufferIndexUniform)]]) {
     ColoredVertex vert;
     vert.position = uniforms.projectionMatrix * float4(in.position, 0, 1);
     vert.color = in.color;
