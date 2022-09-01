@@ -6,12 +6,7 @@
 //
 
 // * Textures
-// ** CreateTexture RGBA
-// ** UpdateTexture (for browser..)
 // ** DrawTexturedRect
-// *** Understand pipeline implications
-// *** Restructure for encoder reuse issues
-// *** Rename shaders
 // *** New shader/buffer/pipeline design for textures
 // * What threading guarantees of frame-complete ?
 // * Keyboard & mouse input
@@ -253,6 +248,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         commandBuffer.present(view.currentDrawable!)
         commandBuffer.addCompletedHandler { [frameID] _ in
             self.buffers.completeFrame(frameID: frameID)
+            self.textures.completeFrame(frameID: frameID)
         }
         commandBuffer.commit()
 
@@ -318,6 +314,6 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
 
     /// Update a texture - must be the same size and pixel format as at create time
     func updateTexture(_ texture: Texture2D, bytes: UnsafeRawPointer) {
-        textures.update(texture: texture, bytes: bytes)
+        textures.update(texture2D: texture, bytes: bytes)
     }
 }
