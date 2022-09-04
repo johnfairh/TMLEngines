@@ -73,6 +73,13 @@ public protocol Engine2D {
 
     /// Update a texture - must be the same size and pixel format as at create time
     func updateTexture(_ texture: Texture2D, bytes: UnsafeRawPointer)
+
+    /// Draw a texture -- just support rectilinear target mapping the entire texture.
+    /// xy0 are top left (closest to origin) xy1 are bottom right (furthest from origin)
+    func drawTexturedRect(x0: Float, y0: Float,
+                          x1: Float, y1: Float,
+                          texture: Texture2D)
+    func flushTexturedRects()
 }
 
 public struct Texture2D {

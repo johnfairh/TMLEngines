@@ -32,6 +32,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
     let lines: RenderPrimitives
     let triangles: RenderPrimitives
     let text: RenderText
+    let texturedRects: RenderTextures
 
     // MARK: Setup
 
@@ -56,6 +57,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         self.points = RenderPrimitives(buffers: buffers, primitiveType: .point)
         self.lines = RenderPrimitives(buffers: buffers, primitiveType: .line)
         self.text = RenderText(device: metalDevice)
+        self.texturedRects = RenderTextures(buffers: buffers, textures: textures)
 
         super.init()
 
@@ -192,7 +194,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
             triangles.flush(encoder: frameEncoder!)
 
         case .textured:
-            preconditionFailure()
+            texturedRects.flush(encoder: frameEncoder!)
 
         case .none:
             break
@@ -312,8 +314,20 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         textures.create(bytes: bytes, width: width, height: height, format: format)
     }
 
-    /// Update a texture - must be the same size and pixel format as at create time
     func updateTexture(_ texture: Texture2D, bytes: UnsafeRawPointer) {
         textures.update(texture2D: texture, bytes: bytes)
+    }
+
+    func drawTexturedRect(x0: Float, y0: Float,
+                          x1: Float, y1: Float,
+                          texture: Texture2D) {
+        assert(frameEncoder != nil)
+        select(pipeline: .textured)
+        texturedRects.render(x0: x0, y0: y0, x1: x1, y1: y1, texture: texture, encoder: frameEncoder!)
+    }
+
+    func flushTexturedRects() {
+        assert(frameEncoder != nil)
+        texturedRects.flush(encoder: frameEncoder!)
     }
 }

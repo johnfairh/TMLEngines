@@ -28,6 +28,11 @@ typedef NS_ENUM(NSInteger, VertexAttr) {
     VertexAttrColor    = 1,
 };
 
+typedef NS_ENUM(NSInteger, TexturedVertexAttr) {
+    TexturedVertexAttrPosition = 0,
+    TexturedVertexAttrTexturePosition = 1,
+};
+
 typedef struct {
     matrix_float4x4 projectionMatrix;
     float           scaleFactor;

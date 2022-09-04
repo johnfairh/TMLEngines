@@ -56,11 +56,12 @@ final class Textures {
     }
 
     /// Use a texture for something (add entity, ID?)
-    func useTexture(_ texture2D: Texture2D) {
+    func useVertexTexture(_ texture2D: Texture2D, encoder: MTLRenderCommandEncoder, index: Int) {
         let texture = textures[texture2D.uuid]!
         if texture.setInUse() {
             framePending.append(texture)
         }
+        encoder.setVertexTexture(texture.metalTexture, index: index)
     }
 
     /// Renderer call, associate all used textures with this frame
@@ -111,7 +112,7 @@ extension Texture2D.Format {
     }
 }
 
-extension Texture2D {
+private extension Texture2D {
     func makeMetalTexture(device: MTLDevice) -> MTLTexture {
         let descriptor = MTLTextureDescriptor.texture2DDescriptor(
             pixelFormat: format.metalFormat,
