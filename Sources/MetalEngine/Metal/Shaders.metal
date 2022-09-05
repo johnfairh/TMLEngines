@@ -21,6 +21,16 @@ struct ColoredVertex {
     float  point_size [[point_size]];
 };
 
+struct TexturedVertexIn {
+    float2 position    [[attribute(TexturedVertexAttrPosition)]];
+    float2 texPosition [[attribute(TexturedVertexAttrTexturePosition)]];
+};
+
+struct TexturedVertexOut {
+    float4 position [[position]];
+    float2 texPosition;
+};
+
 vertex ColoredVertex vertex_flat(FlatVertex in [[stage_in]],
                                  constant Uniforms & uniforms [[buffer(BufferIndexUniform)]]) {
     ColoredVertex vert;
@@ -30,6 +40,20 @@ vertex ColoredVertex vertex_flat(FlatVertex in [[stage_in]],
     return vert;
 }
 
-fragment float4 fragment_passthrough(ColoredVertex vert [[stage_in]]) {
+fragment float4 fragment_flat(ColoredVertex vert [[stage_in]]) {
     return vert.color;
+}
+
+vertex TexturedVertexOut vertex_textured(TexturedVertexIn in [[stage_in]],
+                                         constant Uniforms & uniforms [[buffer(BufferIndexUniform)]]) {
+    TexturedVertexOut vert;
+    vert.position = uniforms.projectionMatrix * float4(in.position, 0, 1);
+    vert.texPosition = in.texPosition;
+    return vert;
+}
+
+fragment float4 fragment_textured(TexturedVertexOut in [[stage_in]],
+                                  texture2d<float, access::sample> texture [[texture(0)]], // XXX enum
+                                  sampler sampler [[sampler(0)]]) {
+    return texture.sample(sampler, in.texPosition);
 }

@@ -21,7 +21,8 @@ import CMetalEngine
 
 class Renderer: NSObject, Engine2D, MTKViewDelegate {
     let metalCommandQueue: MTLCommandQueue
-    private(set) var flatPipeline: MTLRenderPipelineState! = nil
+    let flatPipeline: PipelineState
+    let texturedPipeline: PipelineState
 
     let clientSetup: Engine2DCall
     let clientFrame: Engine2DCall
@@ -51,6 +52,18 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         }
         self.metalCommandQueue = commandQueue
 
+        let library = metalDevice.makeDefaultLibrary(for: Self.self)
+
+        flatPipeline = PipelineState(device: metalDevice, library: library,
+                                     label: "Flat", vertex: "vertex_flat", fragment: "fragment_flat",
+                                     vertexDescriptor: FlatVertex.buildVertexDescriptor(bufferIndex: .vertex),
+                                     withSampler: false)
+        
+        texturedPipeline = PipelineState(device: metalDevice, library: library,
+                                         label: "Textured", vertex: "vertex_textured", fragment: "fragment_textured",
+                                         vertexDescriptor: TexturedVertex.buildVertexDescriptor(bufferIndex: .vertex),
+                                         withSampler: true)
+
         self.buffers = Buffers(device: metalDevice)
         self.textures = Textures(device: metalDevice)
         self.triangles = RenderPrimitives(buffers: buffers, primitiveType: .triangle)
@@ -62,46 +75,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         super.init()
 
         view.delegate = self
-
-        buildPipelines(for: metalDevice)
         clientSetup(self)
-    }
-
-    private func buildPipelines(for device: MTLDevice) {
-#if SWIFT_PACKAGE
-        let bundle = Bundle.module
-#else
-        let bundle = Bundle(for: Self.self)
-#endif
-
-        guard let library = try? device.makeDefaultLibrary(bundle: bundle) else {
-            preconditionFailure("Can't load metal shader library")
-        }
-
-        let vertexDescriptor = FlatVertex.buildVertexDescriptor(bufferIndex: .vertex)
-
-        func makePipeline(_ label: String, _ vertex: String, _ fragment: String) -> MTLRenderPipelineState {
-            let pipelineDescriptor = MTLRenderPipelineDescriptor()
-            pipelineDescriptor.label = label
-            pipelineDescriptor.vertexFunction = library.makeFunction(name: vertex)!
-            pipelineDescriptor.fragmentFunction = library.makeFunction(name: fragment)!
-
-            let colorAtt = pipelineDescriptor.colorAttachments[0]!
-            colorAtt.pixelFormat = .bgra8Unorm
-            colorAtt.isBlendingEnabled = true
-            colorAtt.sourceRGBBlendFactor = .sourceAlpha
-            colorAtt.destinationRGBBlendFactor = .oneMinusSourceAlpha
-            colorAtt.sourceAlphaBlendFactor = .sourceAlpha
-            colorAtt.destinationAlphaBlendFactor = .oneMinusSourceAlpha
-
-            pipelineDescriptor.vertexDescriptor = vertexDescriptor
-            pipelineDescriptor.vertexBuffers[BufferIndex.vertex.rawValue].mutability = .immutable
-            pipelineDescriptor.vertexBuffers[BufferIndex.uniform.rawValue].mutability = .immutable
-            pipelineDescriptor.fragmentBuffers[BufferIndex.uniform.rawValue].mutability = .immutable
-            return try! device.makeRenderPipelineState(descriptor: pipelineDescriptor)
-        }
-
-        flatPipeline = makePipeline("Flat", "vertex_flat", "fragment_passthrough")
     }
 
     // MARK: Uniforms
@@ -202,10 +176,10 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
 
         switch pipeline {
         case .flat:
-            frameEncoder!.setRenderPipelineState(flatPipeline)
+            flatPipeline.select(encoder: frameEncoder!)
 
         case .textured:
-            preconditionFailure()
+            texturedPipeline.select(encoder: frameEncoder!)
 
         case .none:
             break
@@ -329,5 +303,76 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
     func flushTexturedRects() {
         assert(frameEncoder != nil)
         texturedRects.flush(encoder: frameEncoder!)
+    }
+}
+
+struct PipelineState {
+    let pipeline: MTLRenderPipelineState
+    let sampler: MTLSamplerState?
+
+    init(device: MTLDevice,
+         library: MTLLibrary,
+         label: String,
+         vertex: String,
+         fragment: String,
+         vertexDescriptor: MTLVertexDescriptor,
+         withSampler: Bool) {
+
+        let pipelineDescriptor = MTLRenderPipelineDescriptor()
+        pipelineDescriptor.label = label
+        pipelineDescriptor.vertexFunction = library.makeFunction(name: vertex)!
+        pipelineDescriptor.fragmentFunction = library.makeFunction(name: fragment)!
+
+        let colorAtt = pipelineDescriptor.colorAttachments[0]!
+        colorAtt.pixelFormat = .bgra8Unorm
+        colorAtt.isBlendingEnabled = true
+        colorAtt.sourceRGBBlendFactor = .sourceAlpha
+        colorAtt.destinationRGBBlendFactor = .oneMinusSourceAlpha
+        colorAtt.sourceAlphaBlendFactor = .sourceAlpha
+        colorAtt.destinationAlphaBlendFactor = .oneMinusSourceAlpha
+
+        pipelineDescriptor.vertexDescriptor = vertexDescriptor
+        pipelineDescriptor.vertexBuffers[BufferIndex.vertex.rawValue].mutability = .immutable
+        pipelineDescriptor.vertexBuffers[BufferIndex.uniform.rawValue].mutability = .immutable
+        pipelineDescriptor.fragmentBuffers[BufferIndex.uniform.rawValue].mutability = .immutable
+
+        if withSampler {
+            let samplerDescriptor = MTLSamplerDescriptor()
+            samplerDescriptor.magFilter = .linear
+            samplerDescriptor.minFilter = .linear
+            samplerDescriptor.sAddressMode = .repeat
+            samplerDescriptor.tAddressMode = .repeat
+            guard let sampler = device.makeSamplerState(descriptor: samplerDescriptor) else {
+                preconditionFailure("MTLDevice.makeSamplerState()")
+            }
+            self.sampler = sampler
+        } else {
+            self.sampler = nil
+        }
+        pipeline = try! device.makeRenderPipelineState(descriptor: pipelineDescriptor)
+    }
+
+    func select(encoder: MTLRenderCommandEncoder) {
+        encoder.setFragmentSamplerState(sampler, index: 0) // XXX index enum
+        encoder.setRenderPipelineState(pipeline)
+    }
+}
+
+extension Bundle {
+    static func findModuleBundle(for clazz: AnyClass) -> Bundle {
+#if SWIFT_PACKAGE
+        return Bundle.module
+#else
+        return Bundle(for: clazz)
+#endif
+    }
+}
+
+extension MTLDevice {
+    func makeDefaultLibrary(for clazz: AnyClass) -> MTLLibrary {
+        guard let library = try? makeDefaultLibrary(bundle: Bundle.findModuleBundle(for: clazz)) else {
+            preconditionFailure("Can't load metal shader library")
+        }
+        return library
     }
 }

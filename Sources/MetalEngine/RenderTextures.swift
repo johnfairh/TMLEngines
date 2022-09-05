@@ -59,7 +59,7 @@ final class RenderTextures {
         }
         if currentTexture == nil {
             currentTexture = texture
-            textures.useVertexTexture(texture, encoder: encoder, index: 0) // XXX index enum
+            textures.useFragmentTexture(texture, encoder: encoder, index: 0) // XXX index enum
         }
         let vertices: [TexturedVertex] = [
             .init(x: x0, y: y0, u: 0, v: 1),

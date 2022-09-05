@@ -56,12 +56,12 @@ final class Textures {
     }
 
     /// Use a texture for something (add entity, ID?)
-    func useVertexTexture(_ texture2D: Texture2D, encoder: MTLRenderCommandEncoder, index: Int) {
+    func useFragmentTexture(_ texture2D: Texture2D, encoder: MTLRenderCommandEncoder, index: Int) { // XXX enum
         let texture = textures[texture2D.uuid]!
         if texture.setInUse() {
             framePending.append(texture)
         }
-        encoder.setVertexTexture(texture.metalTexture, index: index)
+        encoder.setFragmentTexture(texture.metalTexture, index: index)
     }
 
     /// Renderer call, associate all used textures with this frame
