@@ -13,28 +13,28 @@ import CMetalEngine
 /// A texture, potentially owned by the GPU
 final class Texture {
     /// Lifetime state
-    private(set) var isInUse: Bool
+    private(set) var isFlushing: Bool
 
     /// Metal texture
     let metalTexture: MTLTexture
 
     init(metalTexture: MTLTexture) {
-        self.isInUse = false
+        self.isFlushing = false
         self.metalTexture = metalTexture
     }
 
     /// Draw command scheduled referencing the texture
     ///
     /// - returns: ``true`` if the texture was not previously scheduled
-    func setInUse() -> Bool {
-        defer { isInUse = true }
-        return !isInUse
+    func setFlushing() -> Bool {
+        defer { isFlushing = true }
+        return !isFlushing
     }
 
     /// Device no longer referencing the texture
-    func setNotInUse() {
-        assert(isInUse)
-        isInUse = false
+    func clearFlushing() {
+        assert(isFlushing)
+        isFlushing = false
     }
 }
 
@@ -43,8 +43,8 @@ final class Texture {
 final class Textures {
     private let device: MTLDevice
     private var textures: [UUID: Texture] = [:]
-    private var framePending: [Texture] = []
-    private var allPending: [Renderer.FrameID: [Texture]] = [:]
+    private var frameFlushing: [Texture] = []
+    private var allFlushing: [Renderer.FrameID: [Texture]] = [:]
 
     init(device: MTLDevice) {
         self.device = device
@@ -52,28 +52,28 @@ final class Textures {
 
     /// Renderer call, start frame - debug only?
     func startFrame() {
-        assert(framePending.isEmpty)
+        assert(frameFlushing.isEmpty)
     }
 
     /// Use a texture for something (add entity, ID?)
     func useFragmentTexture(_ texture2D: Texture2D, encoder: MTLRenderCommandEncoder, index: TextureIndex) {
         let texture = textures[texture2D.uuid]!
-        if texture.setInUse() {
-            framePending.append(texture)
+        if texture.setFlushing() {
+            frameFlushing.append(texture)
         }
         encoder.setFragmentTexture(texture.metalTexture, index: index.rawValue)
     }
 
     /// Renderer call, associate all used textures with this frame
     func endFrame(frameID: Renderer.FrameID) {
-        allPending[frameID] = framePending
-        framePending = []
+        allFlushing[frameID] = frameFlushing
+        frameFlushing = []
     }
 
     /// Renderer call from CommandBuffer-Complete time -- textures no longer used by GPU
     func completeFrame(frameID: Renderer.FrameID) {
-        allPending.removeValue(forKey: frameID)?.forEach { texture in
-            texture.setNotInUse()
+        allFlushing.removeValue(forKey: frameID)?.forEach { texture in
+            texture.clearFlushing()
         }
     }
 
@@ -92,7 +92,7 @@ final class Textures {
         guard var texture = textures[texture2D.uuid] else {
             preconditionFailure("Missing Texture2D \(texture2D)")
         }
-        if texture.isInUse {
+        if texture.isFlushing {
             let newMetalTexture = texture2D.makeMetalTexture(device: device)
             texture = Texture(metalTexture: newMetalTexture)
             textures[texture2D.uuid] = texture
