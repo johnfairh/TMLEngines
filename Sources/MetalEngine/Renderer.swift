@@ -6,7 +6,6 @@
 //
 
 // * Rename RenderPrim
-// * What threading guarantees of frame-complete ?
 // * Keyboard & mouse input
 //
 // Extra stuff..
@@ -220,8 +219,10 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         encoder.endEncoding()
         commandBuffer.present(view.currentDrawable!)
         commandBuffer.addCompletedHandler { [frameID] _ in
-            self.buffers.completeFrame(frameID: frameID)
-            self.textures.completeFrame(frameID: frameID)
+            DispatchQueue.main.async { // this is a bit suspcious and really points to locking required in the managers...
+                self.buffers.completeFrame(frameID: frameID)
+                self.textures.completeFrame(frameID: frameID)
+            }
         }
         commandBuffer.commit()
 
