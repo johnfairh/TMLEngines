@@ -53,7 +53,7 @@ vertex TexturedVertexOut vertex_textured(TexturedVertexIn in [[stage_in]],
 }
 
 fragment float4 fragment_textured(TexturedVertexOut in [[stage_in]],
-                                  texture2d<float, access::sample> texture [[texture(0)]], // XXX enum
-                                  sampler sampler [[sampler(0)]]) {
+                                  texture2d<float, access::sample> texture [[texture(TextureIndexTexture)]],
+                                  sampler sampler [[sampler(SamplerIndexLinear)]]) {
     return texture.sample(sampler, in.texPosition);
 }

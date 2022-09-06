@@ -33,6 +33,14 @@ typedef NS_ENUM(NSInteger, TexturedVertexAttr) {
     TexturedVertexAttrTexturePosition = 1,
 };
 
+typedef NS_ENUM(NSInteger, TextureIndex) {
+    TextureIndexTexture = 0,
+};
+
+typedef NS_ENUM(NSInteger, SamplerIndex) {
+    SamplerIndexLinear = 0,
+};
+
 typedef struct {
     matrix_float4x4 projectionMatrix;
     float           scaleFactor;

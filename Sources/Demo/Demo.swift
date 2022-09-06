@@ -39,24 +39,16 @@ class GameClient {
     var monoFont: Font2D! = nil
     var propFont: Font2D! = nil
     var texture1: Texture2D! = nil
+    var texture2: Texture2D! = nil
 
     func setup(engine: Engine2D) {
         engine.setBackgroundColor(.rgb(0, 0, 0))
+
         monoFont = engine.createFont(style: .monospaced, weight: .bold, height: 10)
         propFont = engine.createFont(style: .proportional, weight: .medium, height: 30)
 
-        #if SWIFT_PACKAGE
-        let bundle = Bundle.module
-        #else
-        let bundle = Bundle.main
-        #endif
-        guard let t1URL = bundle.url(forResource: "Resources/avatar_bgra", withExtension: nil) else {
-            preconditionFailure("Bundle load fail")
-        }
-        let data = try! Data(contentsOf: t1URL)
-        texture1 = data.withUnsafeBytes { ubp in
-            engine.createTexture(bytes: ubp.baseAddress!, width: 64, height: 64, format: .bgra)
-        }
+        texture1 = engine.loadTexture(name: "avatar_bgra", format: .bgra)
+        texture2 = engine.loadTexture(name: "avatar_rgba", format: .rgba)
     }
 
     func frame(engine: Engine2D) {
@@ -71,11 +63,20 @@ class GameClient {
                             x1: screen.x * (3/4), y1: screen.y * (3/4), color1: .rgba(0, 1, 0, 0.8),
                             x2: screen.x / 4, y2: screen.y * (3/4), color2: .rgba(0, 0, 1, 0.8))
 
+        engine.drawTexturedRect(x0: screen.x / 8, y0: screen.y / 8,
+                                x1: screen.x / 8 + screen.x / 4, y1: screen.y / 8 + screen.y / 4,
+                                texture: texture1)
+
+        engine.drawTexturedRect(x0: screen.x / 4, y0: screen.y / 4,
+                                x1: screen.x / 4 + screen.x / 4, y1: screen.y / 4 + screen.y / 4,
+                                texture: texture2)
+
         engine.drawQuad(x0: screen.x - screen.x / 8, y0: 0,
                         x1: screen.x, y1: screen.y / 8,
                         x2: screen.x - screen.x / 8, y2: screen.y / 4,
                         x3: screen.x - screen.x / 4, y3: screen.y / 8,
                         color: .rgba(0.6, 0.55, 0, 0.4))
+
 
         engine.drawText("Hello World",
                         font: monoFont,
@@ -146,6 +147,22 @@ final class StarField {
             let newy = star.y - scoot // go up
             engine.drawPoint(x: star.x, y: newy < 0 ? newy + size.y : newy, color: star.color)
         }
-        engine.flushPoints()
+        engine.flushPoints() // make them behind everything else
+    }
+}
+
+extension Engine2D {
+    func loadTexture(name: String, format: Texture2D.Format) -> Texture2D {
+#if SWIFT_PACKAGE
+        let bundle = Bundle.module
+#else
+        let bundle = Bundle.main
+#endif
+        guard let url = bundle.url(forResource: "Resources/\(name)", withExtension: nil) else {
+            preconditionFailure("Bundle load fail")
+        }
+        return try! Data(contentsOf: url).withUnsafeBytes { ubp in
+            createTexture(bytes: ubp.baseAddress!, width: 64, height: 64, format: format)
+        }
     }
 }

@@ -5,9 +5,8 @@
 //  Licensed under MIT (https://github.com/johnfairh/TMLEngines/blob/main/LICENSE
 //
 
-// * Textures
-// ** DrawTexturedRect
-// *** New shader/buffer/pipeline design for textures
+// * Rename RenderPrim
+// * Rename "pend" !!
 // * What threading guarantees of frame-complete ?
 // * Keyboard & mouse input
 //
@@ -16,7 +15,6 @@
 // * 
 
 import MetalKit
-
 import CMetalEngine
 
 class Renderer: NSObject, Engine2D, MTKViewDelegate {
@@ -353,7 +351,7 @@ struct PipelineState {
     }
 
     func select(encoder: MTLRenderCommandEncoder) {
-        encoder.setFragmentSamplerState(sampler, index: 0) // XXX index enum
+        encoder.setFragmentSamplerState(sampler, index: SamplerIndex.linear.rawValue)
         encoder.setRenderPipelineState(pipeline)
     }
 }

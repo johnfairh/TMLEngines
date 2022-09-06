@@ -59,15 +59,15 @@ final class RenderTextures {
         }
         if currentTexture == nil {
             currentTexture = texture
-            textures.useFragmentTexture(texture, encoder: encoder, index: 0) // XXX index enum
+            textures.useFragmentTexture(texture, encoder: encoder, index: .texture )
         }
         let vertices: [TexturedVertex] = [
-            .init(x: x0, y: y0, u: 0, v: 1),
-            .init(x: x1, y: y0, u: 1, v: 1),
-            .init(x: x0, y: y1, u: 0, v: 0),
-            .init(x: x1, y: y0, u: 1, v: 1),
-            .init(x: x0, y: y1, u: 0, v: 0),
-            .init(x: x1, y: y1, u: 1, v: 0),
+            .init(x: x0, y: y0, u: 0, v: 0),
+            .init(x: x1, y: y0, u: 1, v: 0),
+            .init(x: x0, y: y1, u: 0, v: 1),
+            .init(x: x1, y: y0, u: 1, v: 0),
+            .init(x: x0, y: y1, u: 0, v: 1),
+            .init(x: x1, y: y1, u: 1, v: 1),
 
         ]
         if !bufferWriter.add(vertices: vertices) {

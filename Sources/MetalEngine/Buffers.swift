@@ -103,7 +103,12 @@ final class Buffers {
     /// Startup time -- allocate initial buffer needs
     init(device: MTLDevice) {
         self.device = device
-        for _ in 0..<Buffers.INITIAL_BUFFERS * Buffers.BUFFER_CONCURRENCY {
+        create(n: Buffers.INITIAL_BUFFERS)
+    }
+
+    /// Helper to create some buffers, deal with concurrency inflation here
+    private func create(n: Int) {
+        for _ in 0..<n * Buffers.BUFFER_CONCURRENCY {
             free.append(create()!)
         }
     }
@@ -129,7 +134,9 @@ final class Buffers {
 
     /// Client buffer allocation, during frame, fastpath
     func allocate() -> Buffer {
-        precondition(!free.isEmpty, "Out of buffers: \(self)") // for now, spot leaks...
+        if free.isEmpty {
+            create(n: 1)
+        }
         let buffer = free.removeLast()
         allocated.insert(buffer)
         buffer.setAllocated()
@@ -205,7 +212,7 @@ struct BufferWriter<VertexType> {
         self.usedCount = 0
     }
 
-    /// Update the buffer, called isiden ``add(vertices:)``
+    /// Update the buffer, called inside ``add(vertices:)``
     private mutating func setBuffer(_ buffer: Buffer) {
         self.buffer = buffer
         self.nextVertex = buffer.mtlBuffer.contents().bindMemory(to: VertexType.self, capacity: totalCount)
