@@ -28,7 +28,7 @@ final class Buffer {
         /// Buffer is allocated to a client who is filling it
         case allocated
         /// Buffer is owned by the GPU
-        case pending
+        case flushing
     }
     private(set) var state: State
 
@@ -49,14 +49,14 @@ final class Buffer {
     }
 
     /// State change, debug
-    fileprivate func setPending() {
+    fileprivate func setFlushing() {
         assert(state == .allocated)
-        state = .pending
+        state = .flushing
     }
 
     /// State change, debug and state reset for reuse
     fileprivate func setFree() {
-        assert(state == .pending)
+        assert(state == .flushing)
         state = .free
     }
 }
@@ -90,9 +90,9 @@ final class Buffers {
     /// During a frame, buffers allocated to clients being written into
     private var allocated: Set<Buffer> = []
     /// During a frame, buffers that clients have put into draw commands
-    private var framePending: [Buffer] = []
+    private var frameFlushing: [Buffer] = []
     /// Buffers waiting for GPU to be done with a frame's draw commands
-    private var allPending: [UInt64 : [Buffer]] = [:]
+    private var allFlushing: [UInt64 : [Buffer]] = [:]
 
     /// Should be number of clients?  In general want to keep small and rely on dynamic allocating
     /// in the early frames?  Or have clients declare during some initial pass?
@@ -125,11 +125,11 @@ final class Buffers {
 
     /// Renderer call.  Debug only right now.
     func startFrame() {
-        assert(framePending.isEmpty)
+        assert(frameFlushing.isEmpty)
         assert(allocated.isEmpty)
         /// We shouldn't have more than three frames in flight (likely to run out of buffers) because
         /// the higher-level RPD/drawable should have been unavailable and the frame abandoned...
-        assert(allPending.count < 3)
+        assert(allFlushing.count < 3)
     }
 
     /// Client buffer allocation, during frame, fastpath
@@ -144,24 +144,24 @@ final class Buffers {
     }
 
     /// Client buffer done, during frame, fastpath
-    func pend(buffer: Buffer) {
+    func flush(buffer: Buffer) {
         if allocated.remove(buffer) == nil {
             preconditionFailure("Buffer not allocated: \(buffer)")
         }
-        buffer.setPending()
-        framePending.append(buffer)
+        buffer.setFlushing()
+        frameFlushing.append(buffer)
     }
 
     /// Renderer call, this frame's buffer set is completej
     func endFrame(frameID: Renderer.FrameID) {
         assert(allocated.isEmpty, "Buffers still allocated at end-frame")
-        allPending[frameID] = framePending
-        framePending = []
+        allFlushing[frameID] = frameFlushing
+        frameFlushing = []
     }
 
     /// Renderer call from CommandBuffer-Complete time -- buffers now ready for reuse
     func completeFrame(frameID: Renderer.FrameID) {
-        allPending.removeValue(forKey: frameID)?.forEach {
+        allFlushing.removeValue(forKey: frameID)?.forEach {
             $0.setFree()
             free.append($0)
         }
@@ -169,19 +169,19 @@ final class Buffers {
 }
 
 extension Buffers: CustomStringConvertible {
-    var allPendingDescription: String {
-        allPending.map { kv in
+    var allFlushingDescription: String {
+        allFlushing.map { kv in
             "(\(kv.key): \(kv.value.count) buf)"
         }.joined(separator: ", ")
     }
 
-    var allPendingCount: Int {
-        allPending.reduce(0) { r, kv in r + kv.value.count }
+    var allFlushingCount: Int {
+        allFlushing.reduce(0) { r, kv in r + kv.value.count }
     }
 
     var description: String {
-        "Buffers: \(all.count) total, \(free.count) free, \(allocated.count) allocated, \(framePending.count) framePending, \(allPendingCount) allPending\n" +
-          "  AllPending: [\(allPendingDescription)]\n" +
+        "Buffers: \(all.count) total, \(free.count) free, \(allocated.count) allocated, \(frameFlushing.count) frameFlushing, \(allFlushingCount) allFlushing\n" +
+          "  AllFlushing: [\(allFlushingDescription)]\n" +
         all.map { "  \($0.description)" }.joined(separator: "\n")
     }
 }
@@ -219,11 +219,11 @@ struct BufferWriter<VertexType> {
         self.usedCount = 0
     }
 
-    /// Callback if there is a buffer to finish, set it pending in ``Buffers`` and forget it
-    mutating func pend(with: (Buffer, Int) -> Void) {
+    /// Callback if there is a buffer to finish, flush it throught ``Buffers`` and forget it
+    mutating func flush(with: (Buffer, Int) -> Void) {
         if let buffer {
             with(buffer, usedCount)
-            buffers.pend(buffer: buffer)
+            buffers.flush(buffer: buffer)
             self.buffer = nil
         }
     }

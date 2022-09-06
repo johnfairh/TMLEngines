@@ -59,7 +59,7 @@ final class RenderPrimitives {
 
     /// Renderer calls at end of frame
     func flush(encoder: MTLRenderCommandEncoder) {
-        bufferWriter.pend { buffer, usedCount in
+        bufferWriter.flush { buffer, usedCount in
             encoder.setVertexBuffer(buffer.mtlBuffer, offset: 0, index: BufferIndex.vertex.rawValue)
             encoder.drawPrimitives(type: primitiveType, vertexStart: 0, vertexCount: usedCount)
         }

@@ -6,7 +6,6 @@
 //
 
 // * Rename RenderPrim
-// * Rename "pend" !!
 // * What threading guarantees of frame-complete ?
 // * Keyboard & mouse input
 //
@@ -151,7 +150,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         case textured
     }
     private(set) var currentPipeline = Pipeline.none
-    private(set) var frameEncoder: MTLRenderCommandEncoder?
+    private(set) var frameEncoder: MTLRenderCommandEncoder!
 
     func select(pipeline: Pipeline) {
         assert(frameEncoder != nil)
@@ -161,12 +160,12 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
 
         switch currentPipeline {
         case .flat:
-            points.flush(encoder: frameEncoder!)
-            lines.flush(encoder: frameEncoder!)
-            triangles.flush(encoder: frameEncoder!)
+            points.flush(encoder: frameEncoder)
+            lines.flush(encoder: frameEncoder)
+            triangles.flush(encoder: frameEncoder)
 
         case .textured:
-            texturedRects.flush(encoder: frameEncoder!)
+            texturedRects.flush(encoder: frameEncoder)
 
         case .none:
             break
@@ -174,10 +173,10 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
 
         switch pipeline {
         case .flat:
-            flatPipeline.select(encoder: frameEncoder!)
+            flatPipeline.select(encoder: frameEncoder)
 
         case .textured:
-            texturedPipeline.select(encoder: frameEncoder!)
+            texturedPipeline.select(encoder: frameEncoder)
 
         case .none:
             break
@@ -234,12 +233,12 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
     func drawPoint(x: Float, y: Float, color: Color2D) {
         assert(frameEncoder != nil)
         select(pipeline: .flat)
-        points.render(points: [.init(x: x, y: y, color: color)], encoder: frameEncoder!)
+        points.render(points: [.init(x: x, y: y, color: color)], encoder: frameEncoder)
     }
 
     func flushPoints() {
         assert(frameEncoder != nil)
-        points.flush(encoder: frameEncoder!)
+        points.flush(encoder: frameEncoder)
     }
 
     func drawLine(x0: Float, y0: Float, color0: Color2D,
@@ -249,12 +248,12 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         lines.render(points: [
             .init(x: x0, y: y0, color: color0),
             .init(x: x1, y: y1, color: color1),
-        ], encoder: frameEncoder!)
+        ], encoder: frameEncoder)
     }
 
     func flushLines() {
         assert(frameEncoder != nil)
-        lines.flush(encoder: frameEncoder!)
+        lines.flush(encoder: frameEncoder)
     }
 
     func drawTriangle(x0: Float, y0: Float, color0: Color2D,
@@ -266,12 +265,12 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
             .init(x: x0, y: y0, color: color0),
             .init(x: x1, y: y1, color: color1),
             .init(x: x2, y: y2, color: color2),
-          ], encoder: frameEncoder!)
+          ], encoder: frameEncoder)
     }
 
     func flushTriangles() {
         assert(frameEncoder != nil)
-        triangles.flush(encoder: frameEncoder!)
+        triangles.flush(encoder: frameEncoder)
     }
 
     func drawText(_ text: String, font: Font2D, color: Color2D,
@@ -295,12 +294,12 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
                           texture: Texture2D) {
         assert(frameEncoder != nil)
         select(pipeline: .textured)
-        texturedRects.render(x0: x0, y0: y0, x1: x1, y1: y1, texture: texture, encoder: frameEncoder!)
+        texturedRects.render(x0: x0, y0: y0, x1: x1, y1: y1, texture: texture, encoder: frameEncoder)
     }
 
     func flushTexturedRects() {
         assert(frameEncoder != nil)
-        texturedRects.flush(encoder: frameEncoder!)
+        texturedRects.flush(encoder: frameEncoder)
     }
 }
 
