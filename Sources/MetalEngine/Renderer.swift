@@ -5,7 +5,6 @@
 //  Licensed under MIT (https://github.com/johnfairh/TMLEngines/blob/main/LICENSE
 //
 
-// * Rename RenderPrim
 // * Keyboard & mouse input
 //
 // Extra stuff..
@@ -219,7 +218,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         encoder.endEncoding()
         commandBuffer.present(view.currentDrawable!)
         commandBuffer.addCompletedHandler { [frameID] _ in
-            DispatchQueue.main.async { // this is a bit suspcious and really points to locking required in the managers...
+            DispatchQueue.main.async { // this is a bit suspicious and really points to locking required in the managers...
                 self.buffers.completeFrame(frameID: frameID)
                 self.textures.completeFrame(frameID: frameID)
             }

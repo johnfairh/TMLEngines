@@ -1,5 +1,5 @@
 //
-//  Primitives.swift
+//  RenderPrimitives.swift
 //  MetalEngine
 //
 //  Licensed under MIT (https://github.com/johnfairh/TMLEngines/blob/main/LICENSE
