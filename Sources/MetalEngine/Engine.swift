@@ -172,3 +172,25 @@ extension Engine2D {
         return Font2D(name: font.fontName, height: height)
     }
 }
+
+/// This enum is derived from prehistoric times and is thoroughly not recommended
+public enum VirtualKey: Hashable {
+    case backspace
+    case enter
+    case tab
+    case shift
+    case control
+    case escape
+    case left
+    case up
+    case right
+    case down
+    case printable(Character)
+
+    var character: Character? {
+        guard case .printable(let c) = self else {
+            return nil
+        }
+        return c
+    }
+}

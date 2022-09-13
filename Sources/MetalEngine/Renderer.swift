@@ -5,7 +5,9 @@
 //  Licensed under MIT (https://github.com/johnfairh/TMLEngines/blob/main/LICENSE
 //
 
-// * Keyboard & mouse input
+// * Rename MetalView
+// * Keyboard input
+// ** Hook up APIs
 //
 // Extra stuff..
 // * voice
@@ -29,6 +31,8 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
     let triangles: RenderPrimitives
     let text: RenderText
     let texturedRects: RenderTextures
+
+    let keypress: Keypress
 
     // MARK: Setup
 
@@ -67,6 +71,8 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         self.text = RenderText(device: metalDevice)
         self.texturedRects = RenderTextures(buffers: buffers, textures: textures)
 
+        self.keypress = Keypress()
+
         super.init()
 
         view.delegate = self
@@ -85,6 +91,8 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
             viewportSize.y = Float(cgSize.height)
             scaleFactor = Float(window.backingScaleFactor)
             text.setSize(cgSize)
+
+            keypress.set(window: window)
         }
     }
 
