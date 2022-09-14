@@ -6,8 +6,6 @@
 //
 
 // * Rename MetalView
-// * Keyboard input
-// ** Hook up APIs
 //
 // Extra stuff..
 // * voice
@@ -308,6 +306,14 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
     func flushTexturedRects() {
         assert(frameEncoder != nil)
         texturedRects.flush(encoder: frameEncoder)
+    }
+
+    func isKeyDown(_ key: VirtualKey) -> Bool {
+        keypress.isKeyDown(key)
+    }
+
+    func getFirstKeyDown() -> VirtualKey? {
+        keypress.getFirstKeyDown()
     }
 }
 

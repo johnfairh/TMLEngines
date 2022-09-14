@@ -14,8 +14,9 @@ import AppKit
 final class Keypress: NSResponder {
     private var observer: NSObjectProtocol?
     // Keys that are currently held down.  Letters are always upper case to match the traditional keycap.
-    // Just trying to satisfy the interface...
     private var keysDown: Set<VirtualKey>
+
+    // MARK: Lifecycle
 
     override init() {
         keysDown = []
@@ -46,6 +47,8 @@ final class Keypress: NSResponder {
         observer.map { NotificationCenter.default.removeObserver($0) }
     }
 
+    // MARK: Events
+
     override func keyDown(with event: NSEvent) {
         if let key = VirtualKey(keyEvent: event) {
             keysDown.insert(key)
@@ -71,12 +74,23 @@ final class Keypress: NSResponder {
     }
 
     func focusLost() {
-        print(keysDown)
         keysDown = []
+    }
+
+    // MARK: APIs
+
+    func isKeyDown(_ key: VirtualKey) -> Bool {
+        keysDown.contains(key)
+    }
+
+    func getFirstKeyDown() -> VirtualKey? {
+        keysDown.first
     }
 }
 
-import Carbon.HIToolbox
+// MARK: Event decoding gorp
+
+import Carbon.HIToolbox // yikes
 
 private let macVkToVK: [Int : VirtualKey] = [
     kVK_Delete : .backspace,
@@ -89,7 +103,7 @@ private let macVkToVK: [Int : VirtualKey] = [
     kVK_DownArrow: .down
 ]
 
-extension VirtualKey {
+private extension VirtualKey {
     init?(keyEvent: NSEvent) {
         if let special = macVkToVK[Int(keyEvent.keyCode)] {
             self = special
@@ -99,6 +113,6 @@ extension VirtualKey {
             return nil
         }
         // normalize to uppercase
-        self = .printable(character.uppercased().first!)
+        self = .printable(String(character.uppercased().first!))
     }
 }

@@ -67,9 +67,11 @@ class GameClient {
                                 x1: screen.x / 8 + screen.x / 4, y1: screen.y / 8 + screen.y / 4,
                                 texture: texture1)
 
-        engine.drawTexturedRect(x0: screen.x / 4, y0: screen.y / 4,
-                                x1: screen.x / 4 + screen.x / 4, y1: screen.y / 4 + screen.y / 4,
-                                texture: texture2)
+        if engine.isKeyDown(.escape) {
+            engine.drawTexturedRect(x0: screen.x / 4, y0: screen.y / 4,
+                                    x1: screen.x / 4 + screen.x / 4, y1: screen.y / 4 + screen.y / 4,
+                                    texture: texture2)
+        }
 
         engine.drawQuad(x0: screen.x - screen.x / 8, y0: 0,
                         x1: screen.x, y1: screen.y / 8,
@@ -77,8 +79,7 @@ class GameClient {
                         x3: screen.x - screen.x / 4, y3: screen.y / 8,
                         color: .rgba(0.6, 0.55, 0, 0.4))
 
-
-        engine.drawText("Hello World",
+        engine.drawText("Hello World" + (engine.getFirstKeyDown()?.character ?? ""),
                         font: monoFont,
                         color: .rgb(0, 1, 0),
                         x: screen.x / 4,

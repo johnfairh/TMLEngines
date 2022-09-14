@@ -80,6 +80,12 @@ public protocol Engine2D {
                           x1: Float, y1: Float,
                           texture: Texture2D)
     func flushTexturedRects()
+
+    /// Get the current state of a key
+    func isKeyDown(_ key: VirtualKey) -> Bool
+
+    /// Get the first (in some arbitrary order) key down, if any
+    func getFirstKeyDown() -> VirtualKey?
 }
 
 public struct Texture2D {
@@ -185,9 +191,9 @@ public enum VirtualKey: Hashable {
     case up
     case right
     case down
-    case printable(Character)
+    case printable(String)
 
-    var character: Character? {
+    public var character: String? {
         guard case .printable(let c) = self else {
             return nil
         }
