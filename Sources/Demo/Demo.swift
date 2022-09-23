@@ -12,8 +12,8 @@ import MetalEngine
 struct Demo: App {
     var body: some Scene {
         WindowGroup {
-            MetalView(setup: {GameClient.instance.setup(engine: $0) },
-                      frame: { GameClient.instance.frame(engine: $0) })
+            MetalView(setup: { GameClient.instance = .init(engine: $0) },
+                      frame: { GameClient.instance?.frame(engine: $0) })
                 .frame(minWidth: 200, minHeight: 100)
         }
     }
@@ -21,27 +21,29 @@ struct Demo: App {
     #if SWIFT_PACKAGE
     // Some nonsense to make the app work properly when built outside of Xcode
     init() {
-      DispatchQueue.main.async {
-        NSApp.setActivationPolicy(.regular)
-        NSApp.activate(ignoringOtherApps: true)
-        NSApp.windows.first?.makeKeyAndOrderFront(nil)
-      }
+        DispatchQueue.main.async {
+            NSApp.setActivationPolicy(.regular)
+            NSApp.activate(ignoringOtherApps: true)
+            NSApp.windows.first?.makeKeyAndOrderFront(nil)
+        }
     }
     #endif
 }
 
 class GameClient {
-    static var instance = GameClient()
+    static var instance: GameClient?
 
-    private init() {}
+    let starField: StarField
+    var mainMenu: MainMenu!
 
-    let starField = StarField()
-    var monoFont: Font2D! = nil
-    var propFont: Font2D! = nil
-    var texture1: Texture2D! = nil
-    var texture2: Texture2D! = nil
+    let monoFont: Font2D
+    let propFont: Font2D
+    let texture1: Texture2D
+    let texture2: Texture2D
 
-    func setup(engine: Engine2D) {
+    var showingMenu: Bool = false
+
+    init(engine: Engine2D) {
         engine.setBackgroundColor(.rgb(0, 0, 0))
 
         monoFont = engine.createFont(style: .monospaced, weight: .bold, height: 10)
@@ -49,12 +51,34 @@ class GameClient {
 
         texture1 = engine.loadTexture(name: "avatar_bgra", format: .bgra)
         texture2 = engine.loadTexture(name: "avatar_rgba", format: .rgba)
+
+        starField = StarField(engine: engine)
+        mainMenu = MainMenu(engine: engine) { [weak self] cmd in
+            self?.showingMenu = false
+            if cmd == .gameExiting {
+                GameClient.instance = nil
+                DispatchQueue.main.async {
+                    NSApp.terminate(self)
+                }
+            }
+        }
     }
 
     func frame(engine: Engine2D) {
-        let screen = engine.viewportSize
 
-        starField.render(engine: engine)
+        starField.render()
+
+        if showingMenu {
+            mainMenu.runFrame()
+            return
+        }
+
+        if engine.isKeyDown(.printable("M")) {
+            showingMenu = true
+            return
+        }
+
+        let screen = engine.viewportSize
 
         engine.drawLine(x0: 0, y0: 0, color0: .rgb(0.1, 0, 0),
                         x1: screen.x - 1, y1: screen.y - 1, color1: .rgb(0.9, 0, 0))
@@ -115,15 +139,17 @@ final class StarField {
         }
     }
 
+    private let engine: Engine2D
     private var size: SIMD2<Float> = .zero
     private var stars: [Vertex] = []
     private var scrollCount = 0
 
-    init() {
+    init(engine: Engine2D) {
+        self.engine = engine
     }
 
     /// Generate star positions for the current size
-    private func reset(engine: Engine2D) {
+    private func reset() {
         size = engine.viewportSize
         stars = []
         stars.reserveCapacity(Self.STAR_COUNT)
@@ -136,9 +162,9 @@ final class StarField {
     }
 
     /// Render the star field
-    func render(engine: Engine2D) {
+    func render() {
         if engine.viewportSize != size {
-            reset(engine: engine)
+            reset()
         }
 
         scrollCount += 1
@@ -164,6 +190,212 @@ extension Engine2D {
         }
         return try! Data(contentsOf: url).withUnsafeBytes { ubp in
             createTexture(bytes: ubp.baseAddress!, width: 64, height: 64, format: format)
+        }
+    }
+}
+
+enum Menu {
+    static var font: Font2D!
+
+    static let FONT_HEIGHT = Float(24)
+    static let ITEM_PADDING = Float(12)
+
+    static var lastReturnKeyTick: Engine2D.TickCount = 0
+    static var lastKeyDownTick: Engine2D.TickCount = 0
+    static var lastKeyUpTick: Engine2D.TickCount = 0
+}
+
+public class BaseMenu<ItemData: Equatable> {
+    private let engine: Engine2D
+    private let onSelection: (ItemData) -> Void
+
+    private var items: [(String, ItemData)]
+    private var selectedItem: Int
+    private var pushedSelection: ItemData?
+    var heading: String
+
+    init(engine: Engine2D, onSelection: @escaping (ItemData) -> Void) {
+        self.engine = engine
+        self.onSelection = onSelection
+
+        items = []
+        selectedItem = 0
+        pushedSelection = nil
+
+        heading = ""
+
+        if Menu.font == nil {
+            Menu.font = engine.createFont(style: .proportional, weight: .bold, height: Menu.FONT_HEIGHT)
+        }
+    }
+
+    // Clear all menu entries
+    func clearMenuItems() {
+        items = []
+        selectedItem = 0
+    }
+
+    // Add a menu item to the menu
+    func addItem(_ data: ItemData, title: String) {
+        items.append((title, data))
+    }
+
+    // Save any current selection 'by value', prep for menu rebuild
+    func pushSelectedItem() {
+        if selectedItem < items.count {
+            pushedSelection = items[selectedItem].1
+        }
+    }
+
+    // Restore a previously 'pushed' selection, after menu rebuild
+    func popSelectedItem() {
+        guard let pushedSelection else {
+            return
+        }
+
+        self.pushedSelection = nil
+
+        if let index = items.firstIndex(where: {$0.1 == pushedSelection}) {
+            selectedItem = index
+        }
+    }
+
+    // Run a frame + render
+    func runFrame() {
+        // Note: The below code uses globals that are shared across all menus to avoid double
+        // key press registration, this is so that when you do something like hit return in the pause
+        // menu to "go back to main menu" you don't end up immediately registering a return in the
+        // main menu afterwards.
+
+        let currentTickCount = engine.frameTimestamp
+
+        // check if the enter key is down, if it is take action
+        if engine.isKeyDown(.enter) /* ||
+                                         m_pGameEngine->BIsControllerActionActive( eControllerDigitalAction_MenuSelect ) */ {
+            if currentTickCount - 220 > Menu.lastReturnKeyTick {
+                Menu.lastReturnKeyTick = currentTickCount
+                if selectedItem < items.count {
+                    onSelection(items[selectedItem].1)
+                }
+            }
+            // Check if we need to change the selected menu item
+        } else if engine.isKeyDown(.down) /* ||
+                                               m_pGameEngine->BIsControllerActionActive( eControllerDigitalAction_MenuDown ) */ {
+
+            if currentTickCount - 140 > Menu.lastKeyDownTick {
+                Menu.lastKeyDownTick = currentTickCount
+                selectedItem += 1
+                if selectedItem == items.count {
+                    selectedItem = 0
+                }
+            }
+        } else if engine.isKeyDown(.up) /* ||
+                                             m_pGameEngine->BIsControllerActionActive( eControllerDigitalAction_MenuUp ) */ {
+
+            if currentTickCount - 140 > Menu.lastKeyUpTick {
+                Menu.lastKeyUpTick = currentTickCount
+                selectedItem -= 1
+                if selectedItem < 0 {
+                    selectedItem = items.count - 1
+                }
+            }
+        }
+
+        render()
+    }
+
+    private func render() {
+        let maxMenuItems = 14
+
+        let numItems = items.count
+
+        let boxHeight = min(numItems, maxMenuItems) * Int(Menu.FONT_HEIGHT + Menu.ITEM_PADDING)
+
+        var yPos = engine.viewportSize.y / 2.0 - Float(boxHeight / 2)
+
+        if !heading.isEmpty {
+            engine.drawText(heading, font: Menu.font, color: .rgb(1, 0.5, 0.5),
+                                x: 0, y: 10, width: engine.viewportSize.x, height: Menu.FONT_HEIGHT + Menu.ITEM_PADDING * 2,
+                                align: .center, valign: .center)
+        }
+
+        let startItem: Int
+        let endItem: Int
+        if numItems > maxMenuItems {
+            startItem = max(selectedItem - maxMenuItems / 2, 0)
+            endItem = min(startItem + maxMenuItems, numItems)
+        } else {
+            startItem = 0
+            endItem = numItems
+        }
+
+        if startItem > 0 {
+            // Draw ... Scroll Up ...
+            engine.drawText("... Scroll Up ...", font: Menu.font, color: .rgb(1, 1, 1),
+                                x: 0, y: yPos, width: engine.viewportSize.x, height: Menu.FONT_HEIGHT + Menu.ITEM_PADDING,
+                                align: .center, valign: .center)
+
+            yPos += Menu.FONT_HEIGHT + Menu.ITEM_PADDING
+        }
+
+        for i in startItem..<endItem {
+            let item = items[i]
+            // Empty strings can be used to space menus, they don't get drawn or selected
+            if !item.0.isEmpty {
+                let color = i == selectedItem ? Color2D(r: 25/255, g: 200/255, b: 25/255, a: 1) : Color2D(r: 1, g: 1, b: 1, a: 1)
+                let text = i == selectedItem ? "{ \(item.0) }" : item.0
+
+                engine.drawText(text, font: Menu.font, color: color,
+                                    x: 0, y: yPos, width: engine.viewportSize.x, height: Menu.FONT_HEIGHT + Menu.ITEM_PADDING,
+                                    align: .center, valign: .center)
+            }
+
+            yPos += Menu.FONT_HEIGHT + Menu.ITEM_PADDING
+        }
+
+        if numItems > endItem {
+            // Draw ... Scroll Down ...
+            engine.drawText("... Scroll Down ...", font: Menu.font, color: .rgb(1, 1, 1),
+                                x: 0, y: yPos, width: engine.viewportSize.x, height: Menu.FONT_HEIGHT + Menu.ITEM_PADDING,
+                                align: .center, valign: .center)
+
+            yPos += Menu.FONT_HEIGHT + Menu.ITEM_PADDING
+        }
+    }
+}
+
+enum MainMenuItem: String, CaseIterable {
+    case gameStartServer = "Start New Server"
+    case findLANServers = "Find LAN Servers"
+    case findInternetServers = "Find Internet Servers"
+    case createLobby = "Create Lobby"
+    case findLobby = "Find Lobby"
+    case gameInstructions = "Instructions"
+    case statsAchievements = "Stats and Achievements"
+    case leaderboards = "Leaderboards"
+    case friendsList = "Friends List"
+    case clanChatRoom = "Group Chat Room"
+    case remotePlay = "Remote Play"
+    case remoteStorage = "Remote Storage"
+    case minidump = "Write Minidump"
+    case webcallback = "Web Callback"
+    case music = "Music Player"
+    case workshop = "Workshop Items"
+    case htmlSurface = "HTML Page"
+    case inGameStore = "In-game Store"
+    case overlayAPI = "OverlayAPI"
+    case gameExiting = "Exit Game"
+}
+
+class MainMenu: BaseMenu<MainMenuItem> {
+    override init(engine: Engine2D, onSelection: @escaping (MainMenuItem) -> Void) {
+        super.init(engine: engine, onSelection: onSelection)
+        setup()
+    }
+
+    func setup() {
+        MainMenuItem.allCases.forEach {
+            addItem($0, title: $0.rawValue)
         }
     }
 }

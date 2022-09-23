@@ -6,6 +6,7 @@
 //
 
 // * Rename MetalView
+// * Proper locking in buffer/texture managers
 //
 // Extra stuff..
 // * voice
