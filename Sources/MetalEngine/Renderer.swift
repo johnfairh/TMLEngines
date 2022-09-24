@@ -5,11 +5,6 @@
 //  Licensed under MIT (https://github.com/johnfairh/TMLEngines/blob/main/LICENSE
 //
 
-// * Proper locking in buffer/texture managers
-//
-// Extra stuff..
-// * voice (no, move this to Steamworks as a separate module)
-
 import MetalKit
 import CMetalEngine
 
@@ -223,10 +218,8 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         encoder.endEncoding()
         commandBuffer.present(view.currentDrawable!)
         commandBuffer.addCompletedHandler { [frameID] _ in
-            DispatchQueue.main.async { // this is a bit suspicious and really points to locking required in the managers...
-                self.buffers.completeFrame(frameID: frameID)
-                self.textures.completeFrame(frameID: frameID)
-            }
+            self.buffers.completeFrame(frameID: frameID)
+            self.textures.completeFrame(frameID: frameID)
         }
         commandBuffer.commit()
 

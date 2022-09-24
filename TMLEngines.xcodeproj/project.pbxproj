@@ -11,8 +11,9 @@
 		0223FCE528BB6E55005B5BA6 /* Resources in Resources */ = {isa = PBXBuildFile; fileRef = 0223FCE428BB6E55005B5BA6 /* Resources */; };
 		0223FCE828C498F2005B5BA6 /* RenderTextures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0223FCE628C498DA005B5BA6 /* RenderTextures.swift */; };
 		0242A17E28CB4CC300B6AF18 /* Keypress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0242A17D28CB4CC300B6AF18 /* Keypress.swift */; };
+		0262FF2B28DF7254009E1FFD /* Lock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0262FF2A28DF7254009E1FFD /* Lock.swift */; };
 		028F854228B76B24003FD1C1 /* RenderText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 028F854128B76B24003FD1C1 /* RenderText.swift */; };
-		02BFB48028A11B7300FD61EF /* MetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02BFB47F28A11B7300FD61EF /* MetalView.swift */; };
+		02BFB48028A11B7300FD61EF /* MetalEngineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02BFB47F28A11B7300FD61EF /* MetalEngineView.swift */; };
 		02BFB48228A4FF7700FD61EF /* Renderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02BFB48128A4FF7700FD61EF /* Renderer.swift */; };
 		02BFB48528A7B37F00FD61EF /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 02BFB48428A7B37F00FD61EF /* Shaders.metal */; };
 		02BFB4A828B0E9D000FD61EF /* Buffers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02BFB4A728B0E9D000FD61EF /* Buffers.swift */; };
@@ -62,8 +63,9 @@
 		0223FCE428BB6E55005B5BA6 /* Resources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Resources; sourceTree = "<group>"; };
 		0223FCE628C498DA005B5BA6 /* RenderTextures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderTextures.swift; sourceTree = "<group>"; };
 		0242A17D28CB4CC300B6AF18 /* Keypress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keypress.swift; sourceTree = "<group>"; };
+		0262FF2A28DF7254009E1FFD /* Lock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lock.swift; sourceTree = "<group>"; };
 		028F854128B76B24003FD1C1 /* RenderText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderText.swift; sourceTree = "<group>"; };
-		02BFB47F28A11B7300FD61EF /* MetalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalView.swift; sourceTree = "<group>"; };
+		02BFB47F28A11B7300FD61EF /* MetalEngineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalEngineView.swift; sourceTree = "<group>"; };
 		02BFB48128A4FF7700FD61EF /* Renderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Renderer.swift; sourceTree = "<group>"; };
 		02BFB48428A7B37F00FD61EF /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
 		02BFB4A628AA668E00FD61EF /* ShaderTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ShaderTypes.h; path = Sources/CMetalEngine/ShaderTypes.h; sourceTree = SOURCE_ROOT; };
@@ -138,7 +140,7 @@
 			isa = PBXGroup;
 			children = (
 				OBJ_11 /* Engine.swift */,
-				02BFB47F28A11B7300FD61EF /* MetalView.swift */,
+				02BFB47F28A11B7300FD61EF /* MetalEngineView.swift */,
 				02BFB48128A4FF7700FD61EF /* Renderer.swift */,
 				02BFB4A928B29E3100FD61EF /* RenderPrimitives.swift */,
 				0223FCE628C498DA005B5BA6 /* RenderTextures.swift */,
@@ -146,6 +148,7 @@
 				0223FCE228BB67F5005B5BA6 /* Textures.swift */,
 				02BFB4A728B0E9D000FD61EF /* Buffers.swift */,
 				0242A17D28CB4CC300B6AF18 /* Keypress.swift */,
+				0262FF2A28DF7254009E1FFD /* Lock.swift */,
 				02BFB4A628AA668E00FD61EF /* ShaderTypes.h */,
 				02BFB48328A7B36800FD61EF /* Metal */,
 			);
@@ -319,8 +322,9 @@
 				02BFB4AA28B29E3100FD61EF /* RenderPrimitives.swift in Sources */,
 				02BFB48528A7B37F00FD61EF /* Shaders.metal in Sources */,
 				028F854228B76B24003FD1C1 /* RenderText.swift in Sources */,
-				02BFB48028A11B7300FD61EF /* MetalView.swift in Sources */,
+				02BFB48028A11B7300FD61EF /* MetalEngineView.swift in Sources */,
 				0223FCE828C498F2005B5BA6 /* RenderTextures.swift in Sources */,
+				0262FF2B28DF7254009E1FFD /* Lock.swift in Sources */,
 				0223FCE328BB67F5005B5BA6 /* Textures.swift in Sources */,
 				02BFB48228A4FF7700FD61EF /* Renderer.swift in Sources */,
 				OBJ_35 /* Engine.swift in Sources */,

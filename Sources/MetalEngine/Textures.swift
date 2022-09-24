@@ -42,6 +42,8 @@ final class Texture {
 
 final class Textures {
     private let device: MTLDevice
+
+    private let lock = Lock()
     private var textures: [UUID: Texture] = [:]
     private var frameFlushing: [Texture] = []
     private var allFlushing: [Renderer.FrameID: [Texture]] = [:]
@@ -57,47 +59,57 @@ final class Textures {
 
     /// Use a texture for something (add entity, ID?)
     func useFragmentTexture(_ texture2D: Texture2D, encoder: MTLRenderCommandEncoder, index: TextureIndex) {
-        let texture = textures[texture2D.uuid]!
-        if texture.setFlushing() {
-            frameFlushing.append(texture)
+        lock.locked {
+            let texture = textures[texture2D.uuid]!
+            if texture.setFlushing() {
+                frameFlushing.append(texture)
+            }
+            encoder.setFragmentTexture(texture.metalTexture, index: index.rawValue)
         }
-        encoder.setFragmentTexture(texture.metalTexture, index: index.rawValue)
     }
 
     /// Renderer call, associate all used textures with this frame
     func endFrame(frameID: Renderer.FrameID) {
-        allFlushing[frameID] = frameFlushing
-        frameFlushing = []
+        lock.locked {
+            allFlushing[frameID] = frameFlushing
+            frameFlushing = []
+        }
     }
 
     /// Renderer call from CommandBuffer-Complete time -- textures no longer used by GPU
     func completeFrame(frameID: Renderer.FrameID) {
-        allFlushing.removeValue(forKey: frameID)?.forEach { texture in
-            texture.clearFlushing()
+        lock.locked {
+            allFlushing.removeValue(forKey: frameID)?.forEach { texture in
+                texture.clearFlushing()
+            }
         }
     }
 
     /// Create a new texture from a raw in-memory buffer
     func create(bytes: UnsafeRawPointer, width: Int, height: Int, format: Texture2D.Format) -> Texture2D {
-        let texture2D = Texture2D(width: width, height: height, format: format)
-        let metalTexture = texture2D.makeMetalTexture(device: device)
-        texture2D.replaceBytes(metalTexture: metalTexture, bytes: bytes)
-        textures[texture2D.uuid] = Texture(metalTexture: metalTexture)
-        return texture2D
+        lock.locked {
+            let texture2D = Texture2D(width: width, height: height, format: format)
+            let metalTexture = texture2D.makeMetalTexture(device: device)
+            texture2D.replaceBytes(metalTexture: metalTexture, bytes: bytes)
+            textures[texture2D.uuid] = Texture(metalTexture: metalTexture)
+            return texture2D
+        }
     }
 
     /// Change the content of a texture -- if the texture is currently being sent to the GPU then a new texture buffer is
     /// created and the existing one discarded when the GPU is done.
     func update(texture2D: Texture2D, bytes: UnsafeRawPointer) {
-        guard var texture = textures[texture2D.uuid] else {
-            preconditionFailure("Missing Texture2D \(texture2D)")
+        lock.locked {
+            guard var texture = textures[texture2D.uuid] else {
+                preconditionFailure("Missing Texture2D \(texture2D)")
+            }
+            if texture.isFlushing {
+                let newMetalTexture = texture2D.makeMetalTexture(device: device)
+                texture = Texture(metalTexture: newMetalTexture)
+                textures[texture2D.uuid] = texture
+            }
+            texture2D.replaceBytes(metalTexture: texture.metalTexture, bytes: bytes)
         }
-        if texture.isFlushing {
-            let newMetalTexture = texture2D.makeMetalTexture(device: device)
-            texture = Texture(metalTexture: newMetalTexture)
-            textures[texture2D.uuid] = texture
-        }
-        texture2D.replaceBytes(metalTexture: texture.metalTexture, bytes: bytes)
     }
 }
 

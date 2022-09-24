@@ -10,10 +10,9 @@ import CMetalEngine
 
 // MARK: Buffer
 
-// All this stuff is single-threaded right now because I dunno where the concurrency
-// boundaries ought to be.  Probably Buffer should be ST but Buffers MT?
+/// ``Buffers`` is MT-safe, ``Buffer`` is not, client to manage.
 
-/// A managed vertex buffer
+/// A managed vertex buffer, not thread-safe
 final class Buffer {
     /// I have no idea how big is reasonable, probably too small for real systems
     fileprivate static let BUFFER_BYTES = 8192
@@ -77,10 +76,12 @@ extension Buffer: Hashable, CustomStringConvertible {
 
 // MARK: Buffer Manager
 
-/// Buffer manager
+/// Buffer manager, threadsafe
 final class Buffers {
     private let device: MTLDevice
 
+    /// Protects everything here
+    private let lock = Lock()
     /// Buffer IDs are unique per ``Buffers``
     private var nextBufferID = UInt64(2000)
     /// All buffers that exist, for debug
@@ -125,71 +126,83 @@ final class Buffers {
 
     /// Renderer call.  Debug only right now.
     func startFrame() {
-        assert(frameFlushing.isEmpty)
-        assert(allocated.isEmpty)
-        /// We shouldn't have more than three frames in flight (likely to run out of buffers) because
-        /// the higher-level RPD/drawable should have been unavailable and the frame abandoned...
-        assert(allFlushing.count < 3)
+        lock.locked {
+            assert(frameFlushing.isEmpty)
+            assert(allocated.isEmpty)
+            /// We shouldn't have more than three frames in flight (likely to run out of buffers) because
+            /// the higher-level RPD/drawable should have been unavailable and the frame abandoned...
+            assert(allFlushing.count < 3)
+        }
     }
 
     /// Client buffer allocation, during frame, fastpath
     func allocate() -> Buffer {
-        if free.isEmpty {
-            create(n: 1)
+        lock.locked {
+            if free.isEmpty {
+                create(n: 1)
+            }
+            let buffer = free.removeLast()
+            allocated.insert(buffer)
+            buffer.setAllocated()
+            return buffer
         }
-        let buffer = free.removeLast()
-        allocated.insert(buffer)
-        buffer.setAllocated()
-        return buffer
     }
 
     /// Client buffer done, during frame, fastpath
     func flush(buffer: Buffer) {
-        if allocated.remove(buffer) == nil {
-            preconditionFailure("Buffer not allocated: \(buffer)")
+        lock.locked {
+            if allocated.remove(buffer) == nil {
+                preconditionFailure("Buffer not allocated: \(buffer)")
+            }
+            buffer.setFlushing()
+            frameFlushing.append(buffer)
         }
-        buffer.setFlushing()
-        frameFlushing.append(buffer)
     }
 
     /// Renderer call, this frame's buffer set is completej
     func endFrame(frameID: Renderer.FrameID) {
-        assert(allocated.isEmpty, "Buffers still allocated at end-frame")
-        allFlushing[frameID] = frameFlushing
-        frameFlushing = []
+        lock.locked {
+            assert(allocated.isEmpty, "Buffers still allocated at end-frame")
+            allFlushing[frameID] = frameFlushing
+            frameFlushing = []
+        }
     }
 
     /// Renderer call from CommandBuffer-Complete time -- buffers now ready for reuse
     func completeFrame(frameID: Renderer.FrameID) {
-        allFlushing.removeValue(forKey: frameID)?.forEach {
-            $0.setFree()
-            free.append($0)
+        lock.locked {
+            allFlushing.removeValue(forKey: frameID)?.forEach {
+                $0.setFree()
+                free.append($0)
+            }
         }
     }
 }
 
 extension Buffers: CustomStringConvertible {
-    var allFlushingDescription: String {
+    private var allFlushingDescription: String {
         allFlushing.map { kv in
             "(\(kv.key): \(kv.value.count) buf)"
         }.joined(separator: ", ")
     }
 
-    var allFlushingCount: Int {
+    private var allFlushingCount: Int {
         allFlushing.reduce(0) { r, kv in r + kv.value.count }
     }
 
     var description: String {
-        "Buffers: \(all.count) total, \(free.count) free, \(allocated.count) allocated, \(frameFlushing.count) frameFlushing, \(allFlushingCount) allFlushing\n" +
-          "  AllFlushing: [\(allFlushingDescription)]\n" +
-        all.map { "  \($0.description)" }.joined(separator: "\n")
+        lock.locked {
+            "Buffers: \(all.count) total, \(free.count) free, \(allocated.count) allocated, \(frameFlushing.count) frameFlushing, \(allFlushingCount) allFlushing\n" +
+            "  AllFlushing: [\(allFlushingDescription)]\n" +
+            all.map { "  \($0.description)" }.joined(separator: "\n")
+        }
     }
 }
 
 // MARK: BufferWriter
 
 /// Client component to manage putting some kind of vertex data into a succession of
-/// buffers and sending them to the device when full
+/// buffers and sending them to the device when full.  Not threadsafe.
 struct BufferWriter<VertexType> {
     /// Buffer manager
     private let buffers: Buffers
