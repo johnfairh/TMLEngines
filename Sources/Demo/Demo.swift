@@ -12,8 +12,8 @@ import MetalEngine
 struct Demo: App {
     var body: some Scene {
         WindowGroup {
-            MetalView(setup: { GameClient.instance = .init(engine: $0) },
-                      frame: { GameClient.instance?.frame(engine: $0) })
+            MetalEngineView(setup: { GameClient.instance = .init(engine: $0) },
+                            frame: { GameClient.instance?.frame(engine: $0) })
                 .frame(minWidth: 200, minHeight: 100)
         }
     }
@@ -62,6 +62,7 @@ class GameClient {
                 }
             }
         }
+        mainMenu.heading = "Menu"
     }
 
     func frame(engine: Engine2D) {
@@ -305,19 +306,15 @@ public class BaseMenu<ItemData: Equatable> {
     }
 
     private func render() {
+        if !heading.isEmpty {
+            engine.drawText(heading, font: Menu.font, color: .rgb(1, 0.5, 0.5),
+                            x: 0, y: 10, width: engine.viewportSize.x, height: Menu.FONT_HEIGHT + Menu.ITEM_PADDING * 2,
+                            align: .center, valign: .center)
+        }
+
         let maxMenuItems = 14
 
         let numItems = items.count
-
-        let boxHeight = min(numItems, maxMenuItems) * Int(Menu.FONT_HEIGHT + Menu.ITEM_PADDING)
-
-        var yPos = engine.viewportSize.y / 2.0 - Float(boxHeight / 2)
-
-        if !heading.isEmpty {
-            engine.drawText(heading, font: Menu.font, color: .rgb(1, 0.5, 0.5),
-                                x: 0, y: 10, width: engine.viewportSize.x, height: Menu.FONT_HEIGHT + Menu.ITEM_PADDING * 2,
-                                align: .center, valign: .center)
-        }
 
         let startItem: Int
         let endItem: Int
@@ -329,37 +326,37 @@ public class BaseMenu<ItemData: Equatable> {
             endItem = numItems
         }
 
-        if startItem > 0 {
-            // Draw ... Scroll Up ...
-            engine.drawText("... Scroll Up ...", font: Menu.font, color: .rgb(1, 1, 1),
-                                x: 0, y: yPos, width: engine.viewportSize.x, height: Menu.FONT_HEIGHT + Menu.ITEM_PADDING,
-                                align: .center, valign: .center)
+        let boxHeight = min(numItems, maxMenuItems) * Int(Menu.FONT_HEIGHT + Menu.ITEM_PADDING)
 
+        var yPos = engine.viewportSize.y / 2.0 - Float(boxHeight / 2)
+
+        func drawText(_ text: String, color: Color2D) {
+            engine.drawText(text, font: Menu.font, color: color,
+                            x: 0, y: yPos, width: engine.viewportSize.x, height: Menu.FONT_HEIGHT + Menu.ITEM_PADDING,
+                            align: .center, valign: .center)
             yPos += Menu.FONT_HEIGHT + Menu.ITEM_PADDING
+        }
+
+        if startItem > 0 {
+            drawText("... Scroll Up ...", color: .rgb(1, 1, 1))
         }
 
         for i in startItem..<endItem {
             let item = items[i]
             // Empty strings can be used to space menus, they don't get drawn or selected
             if !item.0.isEmpty {
-                let color = i == selectedItem ? Color2D(r: 25/255, g: 200/255, b: 25/255, a: 1) : Color2D(r: 1, g: 1, b: 1, a: 1)
-                let text = i == selectedItem ? "{ \(item.0) }" : item.0
-
-                engine.drawText(text, font: Menu.font, color: color,
-                                    x: 0, y: yPos, width: engine.viewportSize.x, height: Menu.FONT_HEIGHT + Menu.ITEM_PADDING,
-                                    align: .center, valign: .center)
+                if i == selectedItem {
+                    drawText("{ \(item.0) }", color: .rgb(25/255, 200/255, 25/255))
+                } else {
+                    drawText(item.0, color: .rgb(1, 1, 1))
+                }
+            } else {
+                yPos += Menu.FONT_HEIGHT + Menu.ITEM_PADDING
             }
-
-            yPos += Menu.FONT_HEIGHT + Menu.ITEM_PADDING
         }
 
         if numItems > endItem {
-            // Draw ... Scroll Down ...
-            engine.drawText("... Scroll Down ...", font: Menu.font, color: .rgb(1, 1, 1),
-                                x: 0, y: yPos, width: engine.viewportSize.x, height: Menu.FONT_HEIGHT + Menu.ITEM_PADDING,
-                                align: .center, valign: .center)
-
-            yPos += Menu.FONT_HEIGHT + Menu.ITEM_PADDING
+            drawText("... Scroll Down ...", color: .rgb(1, 1, 1))
         }
     }
 }

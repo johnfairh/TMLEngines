@@ -1,6 +1,6 @@
 //
-//  MetalView.swift
-//  MetalEngine
+//  MetalEngineTests.swift
+//  MetalEngineTests
 //
 //  Licensed under MIT (https://github.com/johnfairh/TMLEngines/blob/main/LICENSE
 //

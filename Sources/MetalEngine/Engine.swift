@@ -1,5 +1,5 @@
 //
-//  MetalView.swift
+//  Engine.swift
 //  MetalEngine
 //
 //  Licensed under MIT (https://github.com/johnfairh/TMLEngines/blob/main/LICENSE
@@ -26,7 +26,7 @@ public struct Color2D {
     }
 }
 
-/// An asbtract interface to a 2D graphics engine, create using ``MetalView``
+/// An asbtract interface to a 2D graphics engine, create using ``MetalEngineView``
 public protocol Engine2D {
     /// Set the background color
     func setBackgroundColor(_ color: Color2D)

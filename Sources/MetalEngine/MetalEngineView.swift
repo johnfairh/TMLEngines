@@ -9,7 +9,7 @@ import SwiftUI
 import MetalKit
 
 /// A SwiftUI view wrapping a Metal implementation of the ``Engine`` protocol.
-public struct MetalView: NSViewRepresentable {
+public struct MetalEngineView: NSViewRepresentable {
     let setup: Engine2DCall
     let frame: Engine2DCall
 
@@ -30,23 +30,23 @@ public struct MetalView: NSViewRepresentable {
 
     /// :nodoc: SwiftUI implementation
     public class Coordinator {
-        let parent: MetalView
+        let parent: MetalEngineView
         var renderer: Renderer?
 
-        init(_ parent: MetalView) {
+        init(_ parent: MetalEngineView) {
             self.parent = parent
         }
     }
 
     /// :nodoc: SwiftUI implementation
-    public func makeNSView(context: NSViewRepresentableContext<MetalView>) -> MTKView {
+    public func makeNSView(context: NSViewRepresentableContext<MetalEngineView>) -> MTKView {
         let mtkView = MTKView()
         context.coordinator.renderer = Renderer(view: mtkView, setup: setup, frame: frame)
         return mtkView
     }
 
     /// :nodoc: SwiftUI implementation
-    public func updateNSView(_ nsView: MTKView, context: NSViewRepresentableContext<MetalView>) {
+    public func updateNSView(_ nsView: MTKView, context: NSViewRepresentableContext<MetalEngineView>) {
         // still not sure what this is for
     }
 }

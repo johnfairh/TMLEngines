@@ -5,12 +5,10 @@
 //  Licensed under MIT (https://github.com/johnfairh/TMLEngines/blob/main/LICENSE
 //
 
-// * Rename MetalView
 // * Proper locking in buffer/texture managers
 //
 // Extra stuff..
-// * voice
-// * 
+// * voice (no, move this to Steamworks as a separate module)
 
 import MetalKit
 import CMetalEngine
