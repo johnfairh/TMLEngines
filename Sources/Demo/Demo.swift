@@ -346,7 +346,7 @@ public class BaseMenu<ItemData: Equatable> {
             // Empty strings can be used to space menus, they don't get drawn or selected
             if !item.0.isEmpty {
                 if i == selectedItem {
-                    drawText("{ \(item.0) }", color: .rgb(25/255, 200/255, 25/255))
+                    drawText("{ \(item.0) }", color: .rgb_i(25, 200, 25))
                 } else {
                     drawText(item.0, color: .rgb(1, 1, 1))
                 }
@@ -357,6 +357,16 @@ public class BaseMenu<ItemData: Equatable> {
 
         if numItems > endItem {
             drawText("... Scroll Down ...", color: .rgb(1, 1, 1))
+        }
+    }
+}
+
+/// Specialized for common case with String enum permanently holding all the choices
+final class StaticMenu<MenuItemEnum> : BaseMenu<MenuItemEnum> where MenuItemEnum: Equatable & CaseIterable & RawRepresentable, MenuItemEnum.RawValue == String {
+    override init(engine: Engine2D, onSelection: @escaping (MenuItemEnum) -> Void) {
+        super.init(engine: engine, onSelection: onSelection)
+        MenuItemEnum.allCases.forEach {
+            addItem($0, title: $0.rawValue)
         }
     }
 }
@@ -384,15 +394,4 @@ enum MainMenuItem: String, CaseIterable {
     case gameExiting = "Exit Game"
 }
 
-class MainMenu: BaseMenu<MainMenuItem> {
-    override init(engine: Engine2D, onSelection: @escaping (MainMenuItem) -> Void) {
-        super.init(engine: engine, onSelection: onSelection)
-        setup()
-    }
-
-    func setup() {
-        MainMenuItem.allCases.forEach {
-            addItem($0, title: $0.rawValue)
-        }
-    }
-}
+typealias MainMenu = StaticMenu<MainMenuItem>

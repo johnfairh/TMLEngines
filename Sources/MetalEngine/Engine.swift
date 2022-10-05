@@ -5,11 +5,12 @@
 //  Licensed under MIT (https://github.com/johnfairh/TMLEngines/blob/main/LICENSE
 //
 
-/// A color.
+/// A color
 public struct Color2D {
     /// 0-1
     public let r, g, b, a: Float
 
+    /// Channel values 0-1
     public init(r: Float, g: Float, b: Float, a: Float) {
         self.r = r
         self.g = g
@@ -17,12 +18,24 @@ public struct Color2D {
         self.a = a
     }
 
+    /// Helper to create a fully-opaque color from channel values 0-1
     public static func rgb(_ r: Float, _ g: Float, _ b: Float) -> Color2D {
         Color2D(r: r, g: g, b: b, a: 1)
     }
 
+    /// Helper to create a color  from channel values 0-1
     public static func rgba(_ r: Float, _ g: Float, _ b: Float, _ a: Float) -> Color2D {
         Color2D(r: r, g: g, b: b, a: a)
+    }
+
+    /// Helper to create a fully-opaque color from channel values 0-255
+    public static func rgb_i(_ r: Int, _ g: Int, _ b: Int) -> Color2D {
+        Color2D(r: Float(r)/255.0, g: Float(g)/255.0, b: Float(b)/255.0, a: 1)
+    }
+
+    /// Helper to create a color from channel values 0-255
+    public static func rgba_i(_ r: Float, _ g: Float, _ b: Float, _ a: Float) -> Color2D {
+        Color2D(r: Float(r)/255.0, g: Float(g)/255.0, b: Float(b)/255.0, a: Float(a)/255.0)
     }
 }
 
