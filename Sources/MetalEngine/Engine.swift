@@ -49,11 +49,11 @@ public protocol TickSource {
 }
 
 extension TickSource.TickCount {
-    func isLongerThan(_ duration: TickSource.TickCount, since: TickSource.TickCount) -> Bool {
+    public func isLongerThan(_ duration: TickSource.TickCount, since: TickSource.TickCount) -> Bool {
         self - since > duration
     }
 
-    func isShorterThan(_ duration: TickSource.TickCount, since: TickSource.TickCount) -> Bool {
+    public func isShorterThan(_ duration: TickSource.TickCount, since: TickSource.TickCount) -> Bool {
         self - since < duration
     }
 }
