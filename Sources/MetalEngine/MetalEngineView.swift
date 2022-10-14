@@ -10,6 +10,7 @@ import MetalKit
 
 /// A SwiftUI view wrapping a Metal implementation of the ``Engine`` protocol.
 public struct MetalEngineView: NSViewRepresentable {
+    let preferredFPS: Int
     let setup: Engine2DCall
     let frame: Engine2DCall
 
@@ -17,8 +18,10 @@ public struct MetalEngineView: NSViewRepresentable {
     ///
     /// - parameter setup: Called once before any frame callbacks to create textures, fonts etc.
     /// - parameter frame: Called once per frame to render the view
-    public init(setup: @escaping (any Engine2D) -> Void,
+    public init(preferredFPS: Int = 60,
+                setup: @escaping (any Engine2D) -> Void,
                 frame: @escaping (any Engine2D) -> Void) {
+        self.preferredFPS = preferredFPS
         self.setup = setup
         self.frame = frame
     }
@@ -41,6 +44,7 @@ public struct MetalEngineView: NSViewRepresentable {
     /// :nodoc: SwiftUI implementation
     public func makeNSView(context: NSViewRepresentableContext<MetalEngineView>) -> MTKView {
         let mtkView = MTKView()
+        mtkView.preferredFramesPerSecond = preferredFPS
         context.coordinator.renderer = Renderer(view: mtkView, setup: setup, frame: frame)
         return mtkView
     }

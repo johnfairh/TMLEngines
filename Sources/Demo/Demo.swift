@@ -12,7 +12,8 @@ import MetalEngine
 struct Demo: App {
     var body: some Scene {
         WindowGroup {
-            MetalEngineView(setup: { GameClient.instance = .init(engine: $0) },
+            MetalEngineView(preferredFPS: 100,
+                            setup: { GameClient.instance = .init(engine: $0) },
                             frame: { GameClient.instance?.frame(engine: $0) })
                 .frame(minWidth: 200, minHeight: 100)
         }
@@ -53,7 +54,9 @@ class GameClient {
         texture2 = engine.loadTexture(name: "avatar_rgba", format: .rgba)
 
         starField = StarField(engine: engine)
-        mainMenu = MainMenu(engine: engine) { [weak self] cmd in
+        mainMenu = MainMenu(engine: engine) { mi in
+            true
+        } onSelection: { [weak self] cmd in
             self?.showingMenu = false
             if cmd == .gameExiting {
                 GameClient.instance = nil
@@ -362,16 +365,25 @@ public class BaseMenu<ItemData: Equatable> {
 }
 
 /// Specialized for common case with String enum permanently holding all the choices
-final class StaticMenu<MenuItemEnum> : BaseMenu<MenuItemEnum> where MenuItemEnum: Equatable & CaseIterable & RawRepresentable, MenuItemEnum.RawValue == String {
-    override init(engine: Engine2D, onSelection: @escaping (MenuItemEnum) -> Void) {
-        super.init(engine: engine, onSelection: onSelection)
+final class StaticMenu<MenuItemEnum> : BaseMenu<MenuItemEnum> where MenuItemEnum: Equatable & CaseIterable & CustomStringConvertible {//& RawRepresentable, MenuItemEnum.RawValue == String {
+    private let filter: (MenuItemEnum) -> Bool
+
+    func populate() {
         MenuItemEnum.allCases.forEach {
-            addItem($0, title: $0.rawValue)
+            if filter($0) {
+                addItem($0, title: $0.description)
+            }
         }
+    }
+
+    init(engine: Engine2D, filter: @escaping (MenuItemEnum) -> Bool = { _ in true }, onSelection: @escaping (MenuItemEnum) -> Void) {
+        self.filter = filter
+        super.init(engine: engine, onSelection: onSelection)
+        populate()
     }
 }
 
-enum MainMenuItem: String, CaseIterable {
+enum MainMenuItem: String, CaseIterable, CustomStringConvertible {
     case gameStartServer = "Start New Server"
     case findLANServers = "Find LAN Servers"
     case findInternetServers = "Find Internet Servers"
@@ -392,6 +404,10 @@ enum MainMenuItem: String, CaseIterable {
     case inGameStore = "In-game Store"
     case overlayAPI = "OverlayAPI"
     case gameExiting = "Exit Game"
+
+    var description: String {
+        rawValue
+    }
 }
 
 typealias MainMenu = StaticMenu<MainMenuItem>

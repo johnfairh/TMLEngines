@@ -39,19 +39,32 @@ public struct Color2D {
     }
 }
 
-/// An asbtract interface to a 2D graphics engine, create using ``MetalEngineView``
-public protocol Engine2D {
+/// A source of monotonic time
+public protocol TickSource {
+    /// Millisecond count
+    typealias TickCount = UInt
+
+    /// The current time according to this source
+    var currentTickCount: TickCount { get }
+}
+
+extension TickSource.TickCount {
+    func isLongerThan(_ duration: TickSource.TickCount, since: TickSource.TickCount) -> Bool {
+        self - since > duration
+    }
+
+    func isShorterThan(_ duration: TickSource.TickCount, since: TickSource.TickCount) -> Bool {
+        self - since < duration
+    }
+}
+
+/// An abstract interface to a 2D graphics engine, create using ``MetalEngineView``
+public protocol Engine2D: TickSource {
     /// Set the background color
     func setBackgroundColor(_ color: Color2D)
 
     /// Accessor for game screen size in points
     var viewportSize: SIMD2<Float> { get }
-
-    /// Poorly-encapsulated millisecond clock
-    typealias TickCount = UInt
-
-    /// Tick count - millisecond clock of the start of the current/most recent frame
-    var frameTimestamp: TickCount { get }
 
     /// Milliseconds since the previous frame
     var frameDelta: TickCount { get }
@@ -99,6 +112,14 @@ public protocol Engine2D {
 
     /// Get the first (in some arbitrary order) key down, if any
     func getFirstKeyDown() -> VirtualKey?
+}
+
+public extension Engine2D {
+    /// Tick count - millisecond clock of the start of the current/most recent frame
+    var frameTimestamp: TickCount { currentTickCount }
+
+    /// Steam naming accommodation!
+    var gameTickCount: TickCount { currentTickCount }
 }
 
 public struct Texture2D {

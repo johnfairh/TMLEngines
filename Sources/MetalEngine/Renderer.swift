@@ -123,7 +123,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
 
     // MARK: Clock
 
-    private(set) var frameTimestamp = TickCount()
+    private(set) var currentTickCount = TickCount()
     private      var prevFrameTimestamp = TickCount()
 
     var frameDelta: TickCount {
@@ -132,7 +132,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
 
     private func updateTickCount() {
         prevFrameTimestamp = frameTimestamp
-        frameTimestamp = TickCount(CACurrentMediaTime() * 1000)
+        currentTickCount = TickCount(CACurrentMediaTime() * 1000)
     }
 
     // MARK: Frame counter
