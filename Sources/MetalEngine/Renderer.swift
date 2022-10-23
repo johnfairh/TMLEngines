@@ -76,16 +76,30 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
     private(set) var viewportSize: SIMD2<Float> = .zero
     private(set) var scaleFactor: Float = 0
 
-    public func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
-        if let window = view.window {
-            let cgSize = window.convertFromBacking(NSRect(origin: .zero, size: size)).size
-            viewportSize.x = Float(cgSize.width)
-            viewportSize.y = Float(cgSize.height)
-            scaleFactor = Float(window.backingScaleFactor)
-            text.setSize(cgSize)
-
-            keypress.set(window: window)
+    private func updateGeometry(from view: MTKView) {
+        guard let window = view.window else {
+            return
         }
+        let cgSize = view.frame.size
+        viewportSize.x = Float(cgSize.width)
+        viewportSize.y = Float(cgSize.height)
+        scaleFactor = Float(window.backingScaleFactor)
+        text.setSize(cgSize)
+        keypress.set(window: window)
+    }
+
+    /// This is always called once up-front before `view.window` is set.
+    /// Then called on resizes that may be internal: if the surrounding window is not resizable then it
+    /// is never called again - never called with a valid window.
+    public func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
+        updateGeometry(from: view)
+    }
+
+    func lateInitWindow(view: MTKView) {
+        guard scaleFactor == 0 else {
+            return
+        }
+        updateGeometry(from: view)
     }
 
     private var uniforms = Uniforms()
@@ -193,6 +207,10 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
               let commandBuffer = metalCommandQueue.makeCommandBuffer() else {
             print("No resources to generate frame #1")
             return
+        }
+        // odd corner about fixed-size windows
+        if scaleFactor == 0 {
+            updateGeometry(from: view)
         }
         updateUniforms()
         updateTickCount()

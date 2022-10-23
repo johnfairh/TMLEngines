@@ -15,7 +15,9 @@ struct Demo: App {
             MetalEngineView(preferredFPS: 100,
                             setup: { GameClient.instance = .init(engine: $0) },
                             frame: { GameClient.instance?.frame(engine: $0) })
-                .frame(minWidth: 200, minHeight: 100)
+//                .frame(minWidth: 1024, minHeight: 768)
+        .frame(minWidth: 1024, maxWidth: 1024, minHeight: 768, maxHeight: 768)
+
         }
     }
 
