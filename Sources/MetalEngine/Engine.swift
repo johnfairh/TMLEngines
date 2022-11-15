@@ -34,7 +34,7 @@ public struct Color2D {
     }
 
     /// Helper to create a color from channel values 0-255
-    public static func rgba_i(_ r: Float, _ g: Float, _ b: Float, _ a: Float) -> Color2D {
+    public static func rgba_i(_ r: Int, _ g: Int, _ b: Int, _ a: Int) -> Color2D {
         Color2D(r: Float(r)/255.0, g: Float(g)/255.0, b: Float(b)/255.0, a: Float(a)/255.0)
     }
 }
@@ -215,6 +215,7 @@ extension Engine2D {
 
 /// This enum is derived from prehistoric times and is thoroughly not recommended
 public enum VirtualKey: Hashable {
+    case none
     case backspace
     case enter
     case tab

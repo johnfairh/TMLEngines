@@ -204,7 +204,8 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
 
     public func draw(in view: MTKView) {
         guard let rpd = view.currentRenderPassDescriptor,
-              let commandBuffer = metalCommandQueue.makeCommandBuffer() else {
+              let commandBuffer = metalCommandQueue.makeCommandBuffer(),
+              buffers.startFrame() else {
             print("No resources to generate frame #1")
             return
         }
@@ -214,7 +215,6 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         }
         updateUniforms()
         updateTickCount()
-        buffers.startFrame()
         textures.startFrame()
 
         rpd.colorAttachments[0].clearColor = clearColor

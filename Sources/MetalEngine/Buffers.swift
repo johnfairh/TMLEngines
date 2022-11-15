@@ -125,13 +125,16 @@ final class Buffers {
     }
 
     /// Renderer call.  Debug only right now.
-    func startFrame() {
+    func startFrame() -> Bool {
         lock.locked {
             assert(frameFlushing.isEmpty)
             assert(allocated.isEmpty)
             /// We shouldn't have more than three frames in flight (likely to run out of buffers) because
             /// the higher-level RPD/drawable should have been unavailable and the frame abandoned...
-            assert(allFlushing.count < 3)
+            ///
+            /// ...this seems not to be true when the system grinds, particularly when stopping in the debugger
+            /// or whizzing windows around.
+            return (allFlushing.count < 3)
         }
     }
 
