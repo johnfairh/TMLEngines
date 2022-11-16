@@ -198,6 +198,7 @@ public struct Font2D: Hashable {
 
     let name: String
     let height: Float
+    let nsFont: NSFont
 }
 
 import AppKit
@@ -214,7 +215,7 @@ extension Engine2D {
         case .proportional:
             font = NSFont.systemFont(ofSize: CGFloat(height), weight: fWeight)
         }
-        return Font2D(name: font.fontName, height: height)
+        return Font2D(name: font.fontName, height: height, nsFont: font)
     }
 }
 

@@ -35,18 +35,20 @@ final class RenderText {
                   x: Float, y: Float, width: Float, height: Float,
                   align: Font2D.Alignment.Horizontal,
                   valign: Font2D.Alignment.Vertical) {
-        let node = SKLabelNode(text: text)
+        let node = SKLabelNode()
 
-        node.fontName = font.name
-        node.fontSize = CGFloat(font.height)
-        node.fontColor = NSColor(calibratedRed: CGFloat(color.r), green: CGFloat(color.g), blue: CGFloat(color.b), alpha: 1)
+        // Use this version to make multi-line strings align properly -- straight 'text'
+        // version seems to always left-justify all the lines.
+        node.attributedText = NSAttributedString(string: text, attributes: [
+            .paragraphStyle : align.paragraphStyle,
+            .foregroundColor : NSColor(color),
+            .font: font.nsFont
+        ])
+
+        // Worth caching these nsattrstring things?
+
         node.numberOfLines = 0 // enables "\n" to force linebreak
-// Maddeningly these are only for multi-line labels...
-//        node.preferredMaxLayoutWidth = CGFloat(width)
-//        node.lineBreakMode = .byTruncatingTail
-//
-// We would have to do truncation manually (bsearch the string...) which is yikes,
-// gonna wait and see if we need it.  XXX
+        node.preferredMaxLayoutWidth = CGFloat(width)
 
         var pos = SIMD2<Float>()
 
@@ -86,5 +88,27 @@ final class RenderText {
                         renderPassDescriptor: rpd,
                         commandQueue: commandQueue)
         scene.removeAllChildren()
+    }
+}
+
+extension Font2D.Alignment.Horizontal {
+    var textAlignment: NSTextAlignment {
+        switch self {
+        case .center: return .center
+        case .left: return .left
+        case .right: return .right
+        }
+    }
+
+    var paragraphStyle: NSParagraphStyle {
+        let ps = NSMutableParagraphStyle()
+        ps.alignment = textAlignment
+        return ps
+    }
+}
+
+extension NSColor {
+    convenience init(_ color: Color2D) {
+        self.init(calibratedRed: CGFloat(color.r), green: CGFloat(color.g), blue: CGFloat(color.b), alpha: 1)
     }
 }
