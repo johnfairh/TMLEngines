@@ -37,6 +37,11 @@ public struct Color2D {
     public static func rgba_i(_ r: Int, _ g: Int, _ b: Int, _ a: Int) -> Color2D {
         Color2D(r: Float(r)/255.0, g: Float(g)/255.0, b: Float(b)/255.0, a: Float(a)/255.0)
     }
+
+    /// Scale to 0-255 version
+    public var integerChannels: (r: Int, g: Int, b: Int, a: Int) {
+        (Int(r * 255), Int(g * 255), Int(b * 255), Int(a * 255))
+    }
 }
 
 /// A source of monotonic time

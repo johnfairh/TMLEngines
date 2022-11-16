@@ -119,7 +119,7 @@ class GameClient {
                         align: .center,
                         valign: .center)
 
-        engine.drawText("Slime molds taste like gelatine and bananas",
+        engine.drawText("Slime molds taste like\ngelatine and bananas\n\nLong long long long long long long long long",
                         font: propFont,
                         color: .rgb(0, 1, 0),
                         x: 0,

@@ -40,7 +40,7 @@ final class RenderText {
         node.fontName = font.name
         node.fontSize = CGFloat(font.height)
         node.fontColor = NSColor(calibratedRed: CGFloat(color.r), green: CGFloat(color.g), blue: CGFloat(color.b), alpha: 1)
-
+        node.numberOfLines = 0 // enables "\n" to force linebreak
 // Maddeningly these are only for multi-line labels...
 //        node.preferredMaxLayoutWidth = CGFloat(width)
 //        node.lineBreakMode = .byTruncatingTail
