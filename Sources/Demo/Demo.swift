@@ -72,6 +72,10 @@ class GameClient {
 
     func frame(engine: Engine2D) {
 
+        if let click = engine.mouseClick {
+            print(click)
+        }
+        
         starField.render()
 
         if showingMenu {

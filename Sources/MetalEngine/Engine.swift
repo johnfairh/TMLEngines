@@ -117,6 +117,9 @@ public protocol Engine2D: TickSource {
 
     /// Get the first (in some arbitrary order) key down, if any
     func getFirstKeyDown() -> VirtualKey?
+
+    /// Read and consume (R1C) a mouseclick, in engine coordinates
+    func getMouseClick() -> SIMD2<Float>?
 }
 
 public extension Engine2D {

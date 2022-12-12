@@ -43,7 +43,7 @@ public struct MetalEngineView: NSViewRepresentable {
 
     /// :nodoc: SwiftUI implementation
     public func makeNSView(context: NSViewRepresentableContext<MetalEngineView>) -> MTKView {
-        let mtkView = MTKView()
+        let mtkView = EngineMTKView()
         mtkView.preferredFramesPerSecond = preferredFPS
         context.coordinator.renderer = Renderer(view: mtkView, setup: setup, frame: frame)
         return mtkView
@@ -52,5 +52,18 @@ public struct MetalEngineView: NSViewRepresentable {
     /// :nodoc: SwiftUI implementation
     public func updateNSView(_ nsView: MTKView, context: NSViewRepresentableContext<MetalEngineView>) {
         // still not sure what this is for
+    }
+}
+
+/// Can't figure out how to flow mouse events to a different responder without subclassing.
+/// Should just admit AppKit is designed for extension through subclassing.
+/// Keep the references pointing in one direction, SwiftUI -> MTKView -> Renderer with no cycles
+class EngineMTKView: MTKView {
+    var mouseDownHandler: (CGPoint) -> Void = { _ in }
+
+    override func mouseDown(with event: NSEvent) {
+        mouseDownHandler(convert(event.locationInWindow, to: nil))
+        // window?.firstResponder is actually our Keypress at this time
+        // so we could rejigger that to send the events over there.
     }
 }

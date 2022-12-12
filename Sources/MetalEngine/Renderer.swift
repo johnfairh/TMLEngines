@@ -28,7 +28,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
 
     // MARK: Setup
 
-    public init(view: MTKView,
+    public init(view: EngineMTKView,
                 setup: @escaping (any Engine2D) -> Void,
                 frame: @escaping (any Engine2D) -> Void) {
         self.clientSetup = setup
@@ -68,6 +68,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         super.init()
 
         view.delegate = self
+        view.mouseDownHandler = { [weak self] in self?.mouseClickEvent(point: $0) }
         clientSetup(self)
     }
 
@@ -111,12 +112,12 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
     /// which is square [-1,1].
     private func updateUniforms() {
         // Scale to [0,2]
-        let scale = matrix_float4x4(diagonal: .init(x: 2.0 / viewportSize.x, y: 2.0 / viewportSize.y, z: 1, w: 1))
+        let scale = matrix_float4x4(diagonal: [2.0/viewportSize.x, 2.0 / viewportSize.y, 1, 1])
         // Translate to [-1,1]
         var translate = matrix_float4x4(1)
-        translate.columns.3 = vector_float4(x: -1, y: -1, z: 0, w: 1)
+        translate.columns.3 = [-1, -1, 0, 1]
         // Flip vertical
-        let vflip = matrix_float4x4(diagonal: .init(x: 1, y: -1, z: 1, w: 1))
+        let vflip = matrix_float4x4(diagonal: [1, -1, 1, 1])
         uniforms.projectionMatrix = vflip * translate * scale
         // How many render pixels to a point - for drawing points
         uniforms.scaleFactor = scaleFactor
@@ -242,6 +243,21 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         commandBuffer.commit()
 
         frameID += 1
+    }
+
+    // MARK: Mouse passthrough, a bit of a bodge
+
+    /// In engine coordinates
+    private var _mouseClick: SIMD2<Float>?
+
+    /// Getter clears the event
+    func getMouseClick() -> SIMD2<Float>? {
+        defer { _mouseClick = nil }
+        return _mouseClick
+    }
+
+    func mouseClickEvent(point: CGPoint) {
+        _mouseClick = [Float(point.x), viewportSize.y - Float(point.y)]
     }
 
     // MARK: Primitives
