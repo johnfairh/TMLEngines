@@ -72,7 +72,7 @@ class GameClient {
 
     func frame(engine: Engine2D) {
 
-        if let click = engine.mouseClick {
+        if let click = engine.getMouseClick() {
             print(click)
         }
         

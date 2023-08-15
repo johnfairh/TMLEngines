@@ -254,7 +254,7 @@ struct BufferWriter<VertexType> {
         }
         // Swift's job to turn this into memcpy()...
         vertices.withUnsafeBufferPointer {
-            nextVertex.assign(from: $0.baseAddress!, count: $0.count)
+            nextVertex.update(from: $0.baseAddress!, count: $0.count)
         }
         nextVertex += vertices.count
         usedCount += vertices.count
