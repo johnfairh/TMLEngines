@@ -7,12 +7,16 @@
 
 import AppKit
 
+/* WTF */
+extension Notification: @unchecked Sendable {}
+
 ///
 /// Keypress module to track and report which keys are currently held down.
 ///
 /// Won't work if we have multiple MetalView's in the same window.
+@MainActor
 final class Keypress: NSResponder {
-    private var observer: NSObjectProtocol?
+    private var resignTask: Task<Void, Never>?
     // Keys that are currently held down.  Letters are always upper case to match the traditional keycap.
     private var keysDown: Set<VirtualKey>
 
@@ -32,19 +36,21 @@ final class Keypress: NSResponder {
     }
 
     func set(window: NSWindow) {
-        guard observer == nil else {
+        guard resignTask == nil else {
             return
         }
         window.makeFirstResponder(self)
 
-        observer = NotificationCenter.default.addObserver(forName: NSWindow.didResignKeyNotification,
-                                                          object: window, queue: nil) { [weak self] _ in
-            self?.focusLost()
+        resignTask = Task { @MainActor [weak self] in
+            let sequence = NotificationCenter.default.notifications(named: NSWindow.didResignKeyNotification, object: window)
+            for await _ in sequence {
+                self?.focusLost()
+            }
         }
     }
 
     deinit {
-        observer.map { NotificationCenter.default.removeObserver($0) }
+        resignTask?.cancel()
     }
 
     // MARK: Events
@@ -92,6 +98,7 @@ final class Keypress: NSResponder {
 
 import Carbon.HIToolbox // yikes
 
+@MainActor
 private let macVkToVK: [Int : VirtualKey] = [
     kVK_Delete : .backspace,
     kVK_Return : .enter,
@@ -104,6 +111,7 @@ private let macVkToVK: [Int : VirtualKey] = [
 ]
 
 private extension VirtualKey {
+    @MainActor
     init?(keyEvent: NSEvent) {
         if let special = macVkToVK[Int(keyEvent.keyCode)] {
             self = special

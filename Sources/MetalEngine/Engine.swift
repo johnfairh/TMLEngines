@@ -45,6 +45,7 @@ public struct Color2D {
 }
 
 /// A source of monotonic time
+@MainActor
 public protocol TickSource {
     /// Millisecond count
     typealias TickCount = UInt
@@ -64,6 +65,7 @@ extension TickSource.TickCount {
 }
 
 /// An abstract interface to a 2D graphics engine, create using ``MetalEngineView``
+@MainActor
 public protocol Engine2D: TickSource {
     /// Set the background color
     func setBackgroundColor(_ color: Color2D)

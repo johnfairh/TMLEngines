@@ -15,6 +15,7 @@ import SpriteKit
 ///
 /// We use spritekit here to whack a texture with all the frame's text in -- works because we just want flat
 /// text with no scaling or effects.  Just assume SpriteKit is doing all kinds of efficient things under the covers.
+@MainActor
 final class RenderText {
     let renderer: SKRenderer
     let scene: SKScene

@@ -33,7 +33,9 @@ struct Demo: App {
     #endif
 }
 
+@MainActor
 class GameClient {
+    @MainActor
     static var instance: GameClient?
 
     let starField: StarField
@@ -135,6 +137,7 @@ class GameClient {
     }
 }
 
+@MainActor
 final class StarField {
     private static let STAR_COUNT = 600
 
@@ -204,6 +207,7 @@ extension Engine2D {
     }
 }
 
+@MainActor
 enum Menu {
     static var font: Font2D!
 
@@ -215,6 +219,7 @@ enum Menu {
     static var lastKeyUpTick: Engine2D.TickCount = 0
 }
 
+@MainActor
 public class BaseMenu<ItemData: Equatable> {
     private let engine: Engine2D
     private let onSelection: (ItemData) -> Void
