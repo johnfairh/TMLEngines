@@ -6,7 +6,7 @@
 //
 
 /// A color
-public struct Color2D {
+public struct Color2D: Sendable {
     /// 0-1
     public let r, g, b, a: Float
 
@@ -132,13 +132,13 @@ public extension Engine2D {
     var gameTickCount: TickCount { currentTickCount }
 }
 
-public struct Texture2D {
+public struct Texture2D: Sendable {
     let uuid: UUID
     let width: Int
     let height: Int
     let format: Format
 
-    public enum Format {
+    public enum Format: Sendable {
         case rgba
         case bgra
     }
@@ -176,7 +176,7 @@ public extension Engine2D {
 
 typealias Engine2DCall = (Engine2D) -> Void
 
-public struct Font2D: Hashable {
+public struct Font2D: Hashable, @unchecked Sendable {
     public enum Style {
         case proportional
         case monospaced
@@ -225,7 +225,7 @@ extension Engine2D {
 }
 
 /// This enum is derived from prehistoric times and is thoroughly not recommended
-public enum VirtualKey: Hashable {
+public enum VirtualKey: Hashable, Sendable {
     case none
     case backspace
     case enter

@@ -93,9 +93,10 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
     /// This is always called once up-front before `view.window` is set.
     /// Then called on resizes that may be internal: if the surrounding window is not resizable then it
     /// is never called again - never called with a valid window.
-    @MainActor
-    public func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
-        updateGeometry(from: view)
+    public nonisolated func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
+        MainActor.assumeIsolated {
+            updateGeometry(from: view)
+        }
     }
 
     @MainActor
@@ -206,7 +207,13 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
 
     // MARK: Frame, entrypoint
 
-    public func draw(in view: MTKView) {
+    public nonisolated func draw(in view: MTKView) {
+        MainActor.assumeIsolated {
+            realDraw(in: view)
+        }
+    }
+
+    private func realDraw(in view: MTKView) {
         guard let rpd = view.currentRenderPassDescriptor,
               let commandBuffer = metalCommandQueue.makeCommandBuffer(),
               buffers.startFrame() else {
