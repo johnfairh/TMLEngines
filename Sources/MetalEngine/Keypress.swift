@@ -7,9 +7,6 @@
 
 import AppKit
 
-/* WTF */
-extension Notification: @unchecked Sendable {}
-
 ///
 /// Keypress module to track and report which keys are currently held down.
 ///
@@ -41,10 +38,10 @@ final class Keypress: NSResponder {
         }
         window.makeFirstResponder(self)
 
-        resignTask = Task { @MainActor [weak self] in
+        resignTask = Task.detached { [weak self] in
             let sequence = NotificationCenter.default.notifications(named: NSWindow.didResignKeyNotification, object: window)
             for await _ in sequence {
-                self?.focusLost()
+                await self?.focusLost()
             }
         }
     }
@@ -98,7 +95,6 @@ final class Keypress: NSResponder {
 
 import Carbon.HIToolbox // yikes
 
-@MainActor
 private let macVkToVK: [Int : VirtualKey] = [
     kVK_Delete : .backspace,
     kVK_Return : .enter,
