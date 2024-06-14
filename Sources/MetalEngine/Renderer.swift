@@ -77,7 +77,6 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
     private(set) var viewportSize: SIMD2<Float> = .zero
     private(set) var scaleFactor: Float = 0
 
-    @MainActor
     private func updateGeometry(from view: MTKView) {
         guard let window = view.window else {
             return
@@ -93,13 +92,10 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
     /// This is always called once up-front before `view.window` is set.
     /// Then called on resizes that may be internal: if the surrounding window is not resizable then it
     /// is never called again - never called with a valid window.
-    public nonisolated func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
-        MainActor.assumeIsolated {
-            updateGeometry(from: view)
-        }
+    public func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
+        updateGeometry(from: view)
     }
 
-    @MainActor
     func lateInitWindow(view: MTKView) {
         guard scaleFactor == 0 else {
             return
@@ -207,13 +203,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
 
     // MARK: Frame, entrypoint
 
-    public nonisolated func draw(in view: MTKView) {
-        MainActor.assumeIsolated {
-            realDraw(in: view)
-        }
-    }
-
-    private func realDraw(in view: MTKView) {
+    public func draw(in view: MTKView) {
         guard let rpd = view.currentRenderPassDescriptor,
               let commandBuffer = metalCommandQueue.makeCommandBuffer(),
               buffers.startFrame() else {
@@ -246,10 +236,16 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
 
         encoder.endEncoding()
         commandBuffer.present(view.currentDrawable!)
-        commandBuffer.addCompletedHandler { [frameID] _ in
-            self.buffers.completeFrame(frameID: frameID)
-            self.textures.completeFrame(frameID: frameID)
+
+        let thisFrameID = frameID
+        nonisolated func completionHandler(a: any MTLCommandBuffer) {
+            Task { @MainActor in
+                self.buffers.completeFrame(frameID: thisFrameID)
+                self.textures.completeFrame(frameID: thisFrameID)
+            }
         }
+
+        commandBuffer.addCompletedHandler(completionHandler)
         commandBuffer.commit()
 
         frameID += 1
