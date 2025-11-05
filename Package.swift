@@ -1,11 +1,11 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 6.2
 
 import PackageDescription
 
 let package = Package(
   name: "TMLEngines",
   platforms: [
-    .macOS("14.0"),
+    .macOS("15.0"),
   ],
   products: [
     .library(

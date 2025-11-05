@@ -238,6 +238,7 @@ class Renderer: NSObject, Engine2D, MTKViewDelegate {
         commandBuffer.present(view.currentDrawable!)
 
         let thisFrameID = frameID
+        @Sendable
         nonisolated func completionHandler(a: any MTLCommandBuffer) {
             Task { @MainActor in
                 self.buffers.completeFrame(frameID: thisFrameID)
